@@ -2,7 +2,7 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askdirectory
-from pytube import YouTube
+from pytube import YouTube , Playlist
 from threading import Thread
 
 
@@ -10,28 +10,13 @@ default_path = "/home/aman/Downloads"
 
 path = default_path
 
-file_size = 0
+#file_size = 0
 
-def start_downloading():
-	
-	global file_size
+def single_download():
 
 	try:
 
 		url = url_field.get()
-		
-		print(url)
-
-		label1.config(text = "Your download started :) ")
-
-		#ClearUrl_button.config(text = "please")
-		ClearUrl_button['text']="please"
-		
-		ClearUrl_button.config(state = DISABLED)
-
-		download_button.config(text = "Wait...")
-		
-		download_button.config(state = DISABLED)
 
 		yt = YouTube(url)
 
@@ -51,8 +36,88 @@ def start_downloading():
 
 		stream.download(path)
 
+		print("download completed ,,,,,,,")
+
 		print(path)
 
+	except Exception as e:
+
+		print(e)
+
+
+def multplie_download():
+
+
+	try:
+
+		playlist = url_field.get()
+
+		playlist_url = Playlist(playlist)
+
+		l = len(playlist_url)
+
+		print(l)
+
+		for i in range(l):
+
+			yt = YouTube(playlist_url[i])
+
+			itag = select_Quality()
+
+			print(itag)
+		
+			stream = yt.streams.get_by_itag(itag)
+
+			print(stream.title)
+		
+			file_size = stream.filesize
+		
+			print(stream.filesize)
+
+			print("download started")
+
+			stream.download(path)
+
+			print("{} vedio downloaded \n ".format(i+1))
+
+		print("entire playlist downoaded ")
+
+	except Exception as e:
+
+		print(e)
+
+
+def start_downloading():
+
+	try:
+
+		label1.config(text = "Your download started :) ")
+
+		#ClearUrl_button.config(text = "please")
+		ClearUrl_button['text']="please"
+		
+		ClearUrl_button.config(state = DISABLED)
+
+		download_button.config(text = "Wait...")
+		
+		download_button.config(state = DISABLED)
+
+		ch = radioVar.get()
+
+		print(ch)
+
+		if(ch=="1"):
+
+			print("single")
+
+			single_download()
+
+		else:
+
+			print("multiple")
+
+			multplie_download()
+		
 		download_button.config(text = "Download")
 		
 		download_button.config(state = NORMAL)
@@ -63,13 +128,45 @@ def start_downloading():
 
 		label1.config(text = "paste YouTube Vedio link here")
 
-		print("download completed ,,,,,,,")
-
 	except Exception as e:
 		
 		print(e)
 
 def start_downloading_thread():
+
+	url = url_field.get()
+
+	if(len(url)<2):
+
+		label1.config(text = " Please Enter Valid Url ")
+
+		print("url field is empty")
+
+		return
+
+	if("https://www.youtube.com/" not in url):
+
+		label1.config(text = " Please Enter Valid Url ")
+
+		print("invlaid url")
+
+		return
+
+	if(radioVar.get()=="1" and "playlist" in url):
+
+		label1.config(text = "link not match with its type")
+
+		print("you are trying to download playlist by selcting single vedio Radiobutton")
+
+		return
+
+	if(radioVar.get()=="2" and "watch" in url):
+
+		label1.config(text = " link not match with its type ")
+
+		print("you are trying to download single vedio by selcting playlist Radiobutton")
+
+		return
 
 	thread = Thread(target = start_downloading())
 	
@@ -130,9 +227,27 @@ label1 = Label(root,text="paste YouTube Vedio link here",fg="red",bg="yellow",fo
 
 label1.pack(side = TOP, padx=20, pady = 10)
 
-url_field = Entry(root,width=50,justify=CENTER,font = ("verdana","15"))
+frame = Frame(root,background="black")
 
-url_field.pack()
+frame.pack()
+
+radioVar = StringVar(frame,"1")
+
+#style = ttk.Style(frame)
+
+#style.configure("TRadiobutton", bg = "light green",fg = "red", font = ("arial", 10, "bold"))
+
+single = Radiobutton(frame,text="single vedio",variable = radioVar,value = "1",fg = "black",bg="white",font = ("",10,"bold"))
+
+single.pack(side = LEFT)
+
+multiple = Radiobutton(frame,text="playlist",variable = radioVar,value = "2",fg = "black",bg="white",font = ("",10,"bold"))
+
+multiple.pack(side = LEFT)
+
+url_field = Entry(frame,width=50,font = ("verdana","15"))
+
+url_field.pack(side = LEFT)
 
 topframe = Frame(root)
 
