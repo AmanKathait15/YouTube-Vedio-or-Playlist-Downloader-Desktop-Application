@@ -16,15 +16,37 @@ default_path = "/home/aman/Downloads"
 
 path = default_path
 
-#file_size = 0
+file_size = 0
+
+def on_progress(stream, chunk,bytes_remaining):
+
+	global file_size
+
+	vedio_downloaded = (float(abs(bytes_remaining-file_size)/file_size))*float(100)
+
+	progress_bar['value'] = vedio_downloaded
+
+	root.update_idletasks()
+
+	print(vedio_downloaded)
+
+	desc_button.config(text = "{:.2f} % Downloaded".format(vedio_downloaded))
+	
+	#self.loadbar.setValue(progress)
+
+def on_progress2(stream, chunk, file_handle,bytes_remaining=None):
+
+	print(round((1-bytes_remaining/stream.filesize)*100, 3), '% done...')
 
 def single_download():
+
+	global file_size
 
 	try:
 
 		url = url_field.get()
 
-		yt = YouTube(url)
+		yt = YouTube(url,on_progress_callback=on_progress)
 
 		print(yt.title)
 
@@ -38,7 +60,7 @@ def single_download():
 		
 		file_size = stream.filesize
 		
-		print(stream.filesize)
+		print(stream.filesize//(1024*1024))
 
 		print("download started")
 
@@ -466,7 +488,7 @@ if __name__ == '__main__':
 
 	root.title("YouTube Multi Video Downloader")
 
-	root.geometry("800x600")
+	root.geometry("800x650")
 
 	root.resizable(width = False , height = False)
 	
@@ -550,6 +572,16 @@ if __name__ == '__main__':
 
 	label1.pack(side = TOP, padx=20, pady = 10)
 
+	s = ttk.Style()
+
+	s.theme_use('clam')
+
+	s.configure("red.Horizontal.TProgressbar", foreground='blue', background='black')
+
+	progress_bar = ttk.Progressbar(root,style="red.Horizontal.TProgressbar", orient = HORIZONTAL,length = 300, mode = 'determinate')
+
+	progress_bar.pack(side = TOP , pady = (0,10))
+
 	frame = Frame(root,background="black")
 
 	frame.pack()
@@ -596,7 +628,7 @@ if __name__ == '__main__':
 
 	Savelabel.pack(pady = 10)
 
-	Selectpath_button = Button(root,width = 20,bg = "green",fg = "white", text = "choose folder",font = ("verdana",10,"bold"),command = select_path)
+	Selectpath_button = Button(root,width = 20,bg = "black",fg = "white", text = "choose folder",font = ("verdana",10,"bold"),command = select_path)
 
 	Selectpath_button.pack()
 
