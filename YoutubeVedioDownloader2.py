@@ -31,12 +31,6 @@ def on_progress(stream, chunk,bytes_remaining):
 	print(vedio_downloaded)
 
 	desc_button.config(text = "{:.2f} % Downloaded".format(vedio_downloaded))
-	
-	#self.loadbar.setValue(progress)
-
-def on_progress2(stream, chunk, file_handle,bytes_remaining=None):
-
-	print(round((1-bytes_remaining/stream.filesize)*100, 3), '% done...')
 
 def single_download():
 
@@ -77,6 +71,7 @@ def single_download():
 
 def multplie_download():
 
+	global file_size
 
 	try:
 
@@ -90,7 +85,7 @@ def multplie_download():
 
 		for i in range(l):
 
-			yt = YouTube(playlist_url[i])
+			yt = YouTube(playlist_url[i],on_progress_callback=on_progress)
 
 			itag = select_Quality()
 
@@ -121,7 +116,7 @@ def start_downloading():
 
 	try:
 
-		#label1.config(text = "Your download started :) ")
+		label1.config(text = "Your download started :) ")
 
 		ClearUrl_button.config(text = "please")
 		#ClearUrl_button['text']="please"
@@ -156,13 +151,27 @@ def start_downloading():
 		
 		ClearUrl_button.config(state = NORMAL)
 
-		#label1.config(text = "paste YouTube Vedio link here")
+		desc_button.config(text = "Description")
+
+		label1.config(text = "paste YouTube Vedio link here")
 
 	except Exception as e:
 		
 		print(e)
 
 def start_downloading_thread():
+
+	label1.config(text = "Your download started :) ")
+
+	ClearUrl_button.config(text = "please")
+	#ClearUrl_button['text']="please"
+	
+	ClearUrl_button.config(state = DISABLED)
+
+	download_button.config(text = "Wait...")
+	
+	download_button.config(state = DISABLED)
+
 
 
 	url = url_field.get()
@@ -426,7 +435,7 @@ def open_downloaded_vedio():
 
 	title = yt.title
 
-	title = re.sub('[\|\/\?\*\+\^\.\$]+','',title)
+	title = re.sub('[\|\/\?\*\+\^\.\$:,]+','',title)
 
 	url = path+"/"+title+".mp4"
 
