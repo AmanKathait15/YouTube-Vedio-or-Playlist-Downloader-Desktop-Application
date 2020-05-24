@@ -10,3 +10,15 @@ A desktop application to download youtube vedio and playsit by pasting link of y
  
 type command in terminal : **pip install pytube**  check latest version [here](https://pypi.org/project/pytube/)
  
+## How to use
+
+step 1: clone or download repo to your system \
+step 2: run YoutubeVedioDownloader2.py file - python3 YoutubeVedioDownloader2.py
+
+## References
+
+[https://python-pytube.readthedocs.io/en/latest/](https://python-pytube.readthedocs.io/en/latest/)\
+[https://python-pytube.readthedocs.io/en/latest/user/quickstart.html#get-streams-by-itag](https://python-pytube.readthedocs.io/en/latest/user/quickstart.html#get-streams-by-itag)\
+[https://stackoverflow.com/questions/54710982/using-pytube-to-download-playlist-from-youtube](https://stackoverflow.com/questions/54710982/using-pytube-to-download-playlist-from-youtube)\
+[https://www.geeksforgeeks.org/radiobutton-in-tkinter-python/](https://www.geeksforgeeks.org/radiobutton-in-tkinter-python/)\
+[https://www.geeksforgeeks.org/python-add-image-on-a-tkinter-button/](https://www.geeksforgeeks.org/python-add-image-on-a-tkinter-button/)\
