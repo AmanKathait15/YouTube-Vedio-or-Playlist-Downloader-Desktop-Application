@@ -6,8 +6,7 @@ from tkinter.filedialog import askdirectory
 from pytube import YouTube , Playlist
 from threading import Thread
 
-from PIL import ImageTk, Image
-from urllib import request 
+from time import strftime,localtime
 
 import subprocess, sys
 
@@ -43,6 +42,22 @@ def single_download():
 		yt = YouTube(url,on_progress_callback=on_progress)
 
 		print(yt.title)
+		print()
+
+		print(yt.description)
+		print()
+
+		print(yt.rating)
+		print()
+
+		print(yt.views)
+		print()
+
+		print(yt.length)
+		print()
+
+		print(yt.thumbnail_url)
+		print()
 
 		itag = select_Quality()
 
@@ -63,6 +78,18 @@ def single_download():
 		print("download completed ,,,,,,,")
 
 		print(path)
+
+		title = yt.title
+
+		title = re.sub('[\|\/\?\*\+\^\.\$\,:]+','',title)
+
+		location = path+"/"+title+".mp4"
+
+		print(location)
+
+		with open("history.txt","a") as fp:
+
+			fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" ,"+location)
 
 	except Exception as e:
 
@@ -87,6 +114,24 @@ def multplie_download():
 
 			yt = YouTube(playlist_url[i],on_progress_callback=on_progress)
 
+			print(yt.title)
+			print()
+
+			print(yt.description)
+			print()
+
+			print(yt.rating)
+			print()
+
+			print(yt.views)
+			print()
+
+			print(yt.length)
+			print()
+
+			print(yt.thumbnail_url)
+			print()
+
 			itag = select_Quality()
 
 			print(itag)
@@ -105,27 +150,29 @@ def multplie_download():
 
 			print("{} vedio downloaded \n ".format(i+1))
 
+			title = yt.title
+
+			title = re.sub('[\|\/\?\*\+\^\.\$\,:]+','',title)
+
+			location = path+"/"+title+".mp4"
+
+			print(location)
+
+			with open("history.txt","a") as fp:
+
+				fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" ,"+location)
+
+
 		print("entire playlist downoaded ")
 
 	except Exception as e:
 
-		print(e)
+		raise e
 
 
 def start_downloading():
 
 	try:
-
-		label1.config(text = "Your download started :) ")
-
-		ClearUrl_button.config(text = "please")
-		#ClearUrl_button['text']="please"
-		
-		ClearUrl_button.config(state = DISABLED)
-
-		download_button.config(text = "Wait...")
-		
-		download_button.config(state = DISABLED)
 
 		ch = radioVar.get()
 
@@ -151,7 +198,7 @@ def start_downloading():
 		
 		ClearUrl_button.config(state = NORMAL)
 
-		desc_button.config(text = "Description")
+		desc_button.config(text = "History")
 
 		label1.config(text = "paste YouTube Vedio link here")
 
@@ -160,19 +207,6 @@ def start_downloading():
 		print(e)
 
 def start_downloading_thread():
-
-	label1.config(text = "Your download started :) ")
-
-	ClearUrl_button.config(text = "please")
-	#ClearUrl_button['text']="please"
-	
-	ClearUrl_button.config(state = DISABLED)
-
-	download_button.config(text = "Wait...")
-	
-	download_button.config(state = DISABLED)
-
-
 
 	url = url_field.get()
 
@@ -207,6 +241,19 @@ def start_downloading_thread():
 		print("you are trying to download single vedio by selcting playlist Radiobutton")
 
 		return
+
+	label1.config(text = "Your download started :) ")
+
+	ClearUrl_button.config(text = "please")
+	#ClearUrl_button['text']="please"
+	
+	ClearUrl_button.config(state = DISABLED)
+
+	download_button.config(text = "Wait...")
+	
+	download_button.config(state = DISABLED)
+
+	root.update_idletasks()
 
 	thread = Thread(target = start_downloading())
 	
@@ -296,152 +343,25 @@ def set_bg_to_blue():
 
     middleframe.configure(background="lightblue")
 
-def createNewWindow():
-
-	url = url_field.get()
-
-	yt = YouTube(url)
-
-	#request.urlretrieve(yt.thumbnail_url,yt.title+".jpeg")
-
-	#Creates a Tkinter-compatible photo image, which can be used everywhere Tkinter expects an image object.
-
-	#thumbnail_img = Image.open(yt.title+".jpeg")
-
-	#thumbnail_img = thumbnail_img.resize((300,200),Image.ANTIALIAS)
-
-	desc_window = Toplevel(root)
-
-	desc_window.geometry("600x600")
-
-	color = root["background"]
-
-	desc_window.configure(background = color)
-
-	
-	Label(desc_window,text="Title : "+yt.title,fg="black",font = ("",10,"bold")).pack(side = TOP, pady = 10)
-
-	frame = Frame(desc_window , background = "yellow" , height = 40, width = 200).pack()
-
-	Label(frame,text= yt.rating,fg="black",font=("",10,"bold")).pack(side = LEFT , padx = 10)
-
-	Label(frame,text= yt.views,fg="black",font=("",10,"bold")).pack(side = LEFT, padx = (0,10))
-
-	Label(frame,text= yt.video_id,fg="black",font=("",10,"bold")).pack(side = LEFT , padx = (0,10))
-
-	text_editor = Text(desc_window, height = 15)
-
-	text_editor.config(wrap = 'word' , relief = FLAT)
-
-	scroll_bar = Scrollbar(desc_window)
-
-	text_editor.focus_set()
-
-	scroll_bar.pack(side = RIGHT , fill = Y)
-
-	text_editor.pack()
-
-	scroll_bar.config(command = text_editor.yview)
-
-	text_editor.config(yscrollcommand = scroll_bar.set)
-
-	text_editor.insert(END,yt.description)
-	
-	'''
-
-	#thumbnail_img = ImageTk.PhotoImage(thumbnail_img)
-
-	#The Label widget is a standard Tkinter widget used to display a text or image on the screen.
-	#thumbnail = Label(desc_window, image = thumbnail_img,height=400,width=400)
-
-	#The Pack geometry manager packs widgets in rows or columns.
-	#thumbnail.pack()
-
-	Label(desc_window,text= yt.rating,fg="black",font=("",10,"bold")).pack(side = LEFT)
-
-	Label(desc_window,text= yt.views,fg="black",font=("",10,"bold")).pack(side = LEFT)
-
-	Label(desc_window,text= yt.video_id,fg="black",font=("",10,"bold")).pack(side = LEFT) '''
-
-def createnewwindow_thread():
-
-	url = url_field.get()
-
-	if(len(url)<2):
-
-		label1.config(text = "Url field is empty")
-
-		print("url field is empty")
-
-		return
-
-	if("https://www.youtube.com/" not in url):
-
-		label1.config(text = "Sorry no description available for vedio")
-
-		print("invlaid url")
-
-		return
-
-	thread = Thread(target = createNewWindow())
-	
-	thread.start()
-
 def open_downloaded_vedio():
 
-	url = url_field.get()
+	global path
 
-	if(len(url)<2):
+	url = ""
 
-		label1.config(text = " Url field is empty ")
+	with open("history.txt","r") as f:
 
-		print("url field is empty")
+		data = f.readlines()
 
-		return
+		lastline = data[-1]
 
-	if("https://www.youtube.com/" not in url):
+		print(lastline)
 
-		label1.config(text = " Please Enter Valid Url ")
+		url = lastline.split(",")
 
-		print("invlaid url")
-
-		return
-
-	if(radioVar.get()=="1" and "playlist" in url):
-
-		label1.config(text = "link not match with its type")
-
-		print("you are trying to download playlist by selcting single vedio Radiobutton")
-
-		return
-
-	if(radioVar.get()=="2" and "watch" in url):
-
-		label1.config(text = " link not match with its type ")
-
-		print("you are trying to download single vedio by selcting playlist Radiobutton")
-
-		return
-
-	if(radioVar.get()=="2"):
-
-		playlist_url = Playlist(url)
-
-		url = playlist_url[0]
-
-	yt = YouTube(url)
-
-	print(yt.title)
-
-	title = yt.title
-
-	title = re.sub('[\|\/\?\*\+\^\.\$:,]+','',title)
-
-	url = path+"/"+title+".mp4"
+		url = url[2]
 
 	print(url)
-
-	#url = "/home/aman/Downloads/BANGALORE - THE SILICON VALLEY OF INDIA  BENGALURU CITY VIEW  2019 4K  WORLD EXPLORE.mp4"
 
 	if sys.platform.startswith('linux'):
 	    
@@ -464,6 +384,8 @@ def open_downloaded_vedio():
 	    
 	    subprocess.Popen(['xdg-open', url],
 	                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+	print("Sorry downloaded file can not be open try to open it by going to path : "+path)
 
 def open_youtube():
 
@@ -490,6 +412,33 @@ def open_youtube():
 	    
 	    subprocess.Popen(['xdg-open', url],
 	                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+def open_history():
+
+	url = "history.txt"
+
+	if sys.platform.startswith('linux'):
+	    
+	    subprocess.Popen(['xdg-open', url],
+	                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	
+	elif sys.platform.startswith('win32'):
+	    
+	    os.startfile(url)
+	
+	elif sys.platform.startswith('cygwin'):
+	    
+	    os.startfile(url)
+	
+	elif sys.platform.startswith('darwin'):
+	    
+	    subprocess.Popen(['open', url],
+	                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	else:
+	    
+	    subprocess.Popen(['xdg-open', url],
+	                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
 
 if __name__ == '__main__':
 
@@ -625,7 +574,7 @@ if __name__ == '__main__':
 
 	ClearUrl_button.pack(side=LEFT)
 
-	desc_button = Button(middleframe,text="Description",bg = "black", fg = "white",font = (" ",10,"bold"), command = createnewwindow_thread)
+	desc_button = Button(middleframe,text="History",bg = "black", fg = "white",font = (" ",10,"bold"), command = open_history)
 
 	desc_button.pack(side = LEFT)
 
@@ -657,9 +606,13 @@ if __name__ == '__main__':
 
 	choices.pack()
 
-	choices.current(2)
+	choices.current(3)
 
 	choices.bind("<<ComboboxSelected>>",select_Quality)
+
+	label2 = Label(root,text="open downoaded vedio",font = ("verdana",15,"bold"),fg="red",bg="yellow")
+
+	label2.pack(pady = (10,0))
 
 	vedio_image = PhotoImage(file = "/home/aman/Documents/my_projects/YouTube_Downloader/vedio.png")
 	
