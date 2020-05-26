@@ -4,7 +4,7 @@ A desktop application to download youtube vedio and playsit by pasting link of y
 
 ### Appliaction image
 
-![Screen shot](https://github.com/AmanKathait15/YouTube-Vedio-or-Playlist-Downloader-Desktop-Application/blob/master/readme_resource/ss.png)
+![Screen shot](https://github.com/AmanKathait15/YouTube-Vedio-or-Playlist-Downloader-Desktop-Application/blob/master/readme_resource/ss3.png)
  
 ## to install pytube library in your system
  
