@@ -8,11 +8,13 @@ from threading import Thread
 
 from time import strftime,localtime,gmtime
 from urllib import request
+from pathlib import Path
 
-import subprocess, sys
+import subprocess, sys , os
 
+default_path = str(os.path.join(Path.home(), "Downloads"))
 
-default_path = "/home/aman/Downloads"
+print(default_path)
 
 path = default_path
 
