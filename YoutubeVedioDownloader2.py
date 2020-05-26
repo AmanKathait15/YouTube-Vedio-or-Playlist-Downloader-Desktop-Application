@@ -6,7 +6,8 @@ from tkinter.filedialog import askdirectory
 from pytube import YouTube , Playlist
 from threading import Thread
 
-from time import strftime,localtime
+from time import strftime,localtime,gmtime
+from urllib import request
 
 import subprocess, sys
 
@@ -31,6 +32,12 @@ def on_progress(stream, chunk,bytes_remaining):
 
 	desc_button.config(text = "{:.2f} % Downloaded".format(vedio_downloaded))
 
+def on_progress2(current,total):
+
+	progress_bar['value'] = (current/total*100)
+
+	root.update_idletasks()
+
 def single_download():
 
 	global file_size
@@ -39,57 +46,111 @@ def single_download():
 
 		url = url_field.get()
 
-		yt = YouTube(url,on_progress_callback=on_progress)
+		if(select_Quality() == "1"):
 
-		print(yt.title)
-		print()
+			yt = YouTube(url)
 
-		print(yt.description)
-		print()
+			title = yt.title
 
-		print(yt.rating)
-		print()
+			print(title)
+			print()
 
-		print(yt.views)
-		print()
+			print(yt.description)
+			print()
 
-		print(yt.length)
-		print()
+			print(yt.rating)
+			print()
 
-		print(yt.thumbnail_url)
-		print()
+			print(yt.views)
+			print()
 
-		itag = select_Quality()
+			print(yt.length)
+			print()
 
-		print(itag)
-		
-		stream = yt.streams.get_by_itag(itag)
+			print(yt.thumbnail_url)
+			print()
 
-		print(stream.title)
-		
-		file_size = stream.filesize
-		
-		print(stream.filesize//(1024*1024))
+			label2.config(text = "{}/{} thumbnail downloaded".format(0,1))
 
-		print("download started")
+			label4.config(text = "wait for thumbnail to download completly")
 
-		stream.download(path)
+			label3.config(text = "RATING : "+str(yt.rating)+" VIEWS : "+str(yt.views)+" DURATION : "+strftime("%H:%M:%S", gmtime(yt.length)) , font = ("",14,"bold"))
 
-		print("download completed ,,,,,,,")
+			request.urlretrieve(yt.thumbnail_url,path+"/"+yt.title+".jpeg")
 
-		print(path)
+			on_progress2(1,1)
 
-		title = yt.title
+			location = path+"/"+title+".jpeg"
 
-		title = re.sub('[\|\/\?\*\+\^\.\$\,:]+','',title)
+			print(location)
 
-		location = path+"/"+title+".mp4"
+			with open("history.txt","a") as fp:
 
-		print(location)
+				fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+Quality[choices.current()]+" ,"+location+", "+url)
 
-		with open("history.txt","a") as fp:
+		else:
 
-			fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" ,"+location)
+			yt = YouTube(url,on_progress_callback=on_progress)
+
+			title = yt.title
+
+			print(title)
+			print()
+
+			print(yt.description)
+			print()
+
+			print(yt.rating)
+			print()
+
+			print(yt.views)
+			print()
+
+			print(yt.length)
+			print()
+
+			print(yt.thumbnail_url)
+			print()
+
+			label2.config(text = "{}/{} Vedios downloaded".format(0,1))
+
+			label4.config(text = "wait for vedio to download completly")
+
+			label3.config(text = "RATING : "+str(yt.rating)+" VIEWS : "+str(yt.views)+" DURATION : "+strftime("%H:%M:%S", gmtime(yt.length)) , font = ("",14,"bold"))
+
+			root.update_idletasks()
+
+			itag = select_Quality()		
+
+			print(itag)
+
+			stream = yt.streams.get_by_itag(itag)
+
+			print(stream.title)
+			
+			file_size = stream.filesize
+			
+			print(stream.filesize//(1024*1024))
+
+			print("download started")
+
+			stream.download(path)
+
+			print("download completed ,,,,,,,")
+
+			print(path)
+
+			label2.config(text = "{}/{} Vedios downloaded".format(1,1))
+
+			title = re.sub('[\|\/\?\*\+\^\.\$\,:]+','',title)
+
+			location = path+"/"+title+".mp4"
+
+			print(location)
+
+			with open("history.txt","a") as fp:
+
+				fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+Quality[choices.current()]+" ,"+location+", "+url)
 
 	except Exception as e:
 
@@ -112,55 +173,116 @@ def multplie_download():
 
 		for i in range(l):
 
-			yt = YouTube(playlist_url[i],on_progress_callback=on_progress)
+			label2.config(text = "{}/{} thumbnail downloaded".format(i,l))
 
-			print(yt.title)
-			print()
+			url = playlist_url[i]
 
-			print(yt.description)
-			print()
+			if(select_Quality() == "1"):
 
-			print(yt.rating)
-			print()
+				yt = YouTube(url)
 
-			print(yt.views)
-			print()
+				title = yt.title
 
-			print(yt.length)
-			print()
+				print(title)
+				print()
 
-			print(yt.thumbnail_url)
-			print()
+				print(yt.description)
+				print()
 
-			itag = select_Quality()
+				print(yt.rating)
+				print()
 
-			print(itag)
-		
-			stream = yt.streams.get_by_itag(itag)
+				print(yt.views)
+				print()
 
-			print(stream.title)
-		
-			file_size = stream.filesize
-		
-			print(stream.filesize)
+				print(yt.length)
+				print()
 
-			print("download started")
+				print(yt.thumbnail_url)
+				print()
 
-			stream.download(path)
+				label4.config(text = "wait for thumbnail to download completly")
 
-			print("{} vedio downloaded \n ".format(i+1))
+				label3.config(text = "RATING : "+str(yt.rating)+" VIEWS : "+str(yt.views)+" DURATION : "+strftime("%H:%M:%S", gmtime(yt.length)) , font = ("",14,"bold"))
 
-			title = yt.title
+				itag = select_Quality()
 
-			title = re.sub('[\|\/\?\*\+\^\.\$\,:]+','',title)
+				root.update_idletasks()
 
-			location = path+"/"+title+".mp4"
+				request.urlretrieve(yt.thumbnail_url,path+"/"+yt.title+".jpeg")
 
-			print(location)
+				root.update_idletasks()
 
-			with open("history.txt","a") as fp:
+				on_progress2(i+1,l)
 
-				fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" ,"+location)
+				location = path+"/"+title+".jpeg"
+
+				#print(location)
+
+				with open("history.txt","a") as fp:
+
+					fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+Quality[choices.current()]+" ,"+location+", "+url)
+
+
+			else:
+
+				label2.config(text = "{}/{} Vedios downloaded".format(i,l))
+
+				yt = YouTube(url,on_progress_callback=on_progress)
+
+				title = yt.title
+
+				print(title)
+				print()
+
+				print(yt.description)
+				print()
+
+				print(yt.rating)
+				print()
+
+				print(yt.views)
+				print()
+
+				print(yt.length)
+				print()
+
+				print(yt.thumbnail_url)
+				print()
+
+				label4.config(text = "wait for vedio to download completly")
+
+				label3.config(text = "RATING : "+str(yt.rating)+" VIEWS : "+str(yt.views)+" DURATION : "+strftime("%H:%M:%S", gmtime(yt.length)) , font = ("",14,"bold"))
+
+				itag = select_Quality()
+
+				root.update_idletasks()
+
+				print(itag)
+
+				stream = yt.streams.get_by_itag(itag)
+
+				print(stream.title)
+				
+				file_size = stream.filesize
+				
+				print(stream.filesize)
+
+				print("download started")
+
+				stream.download(path)
+
+				print("{} vedio downloaded \n ".format(i+1))
+
+				title = re.sub('[\|\/\?\*\+\^\.\$\,:]+','',title)
+
+				location = path+"/"+title+".mp4"
+
+				print(location)
+
+				with open("history.txt","a") as fp:
+
+					fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+Quality[choices.current()]+" ,"+location+", "+url)
 
 
 		print("entire playlist downoaded ")
@@ -198,9 +320,41 @@ def start_downloading():
 		
 		ClearUrl_button.config(state = NORMAL)
 
+		Selectpath_button.config(state = NORMAL)
+
+		play_vedio_button.config(state = NORMAL)
+
+		red_button.config(state = NORMAL)
+
+		green_button.config(state = NORMAL)
+
+		orange_button.config(state = NORMAL)
+
+		violet_button.config(state = NORMAL)
+
+		pink_button.config(state = NORMAL)
+
+		brown_button.config(state = DISABLED)
+
+		yellow_button.config(state = NORMAL)
+
+		lightgreen_button.config(state = NORMAL)
+
+		blue_button.config(state = NORMAL)
+
+		grey_button.config(state = NORMAL)
+
+		icon_button.config(state = NORMAL)
+
 		desc_button.config(text = "History")
 
-		label1.config(text = "paste YouTube Vedio link here")
+		label1.config(text = " paste YouTube Vedio link here ")
+
+		label2.config(text="select download location",fg="red",bg="yellow",font = ("Agency FB",15,"bold"))
+
+		label3.config(text="select quality of vedio to download",fg="red",bg="yellow",font = ("Agency FB",15,"bold"))
+
+		label4.config(text="open downloaded vedio",fg="red",bg="yellow",font = ("Agency FB",15,"bold"))
 
 	except Exception as e:
 		
@@ -253,6 +407,32 @@ def start_downloading_thread():
 	
 	download_button.config(state = DISABLED)
 
+	Selectpath_button.config(state = DISABLED)
+
+	play_vedio_button.config(state = DISABLED)
+
+	red_button.config(state = DISABLED)
+
+	brown_button.config(state = DISABLED)
+
+	green_button.config(state = DISABLED)
+
+	orange_button.config(state = DISABLED)
+
+	violet_button.config(state = DISABLED)
+
+	icon_button.config(state = DISABLED)
+
+	pink_button.config(state = DISABLED)
+
+	grey_button.config(state = DISABLED)
+
+	blue_button.config(state = DISABLED)
+
+	yellow_button.config(state = DISABLED)
+
+	lightgreen_button.config(state = DISABLED)
+
 	root.update_idletasks()
 
 	thread = Thread(target = start_downloading())
@@ -289,6 +469,10 @@ def select_Quality(event = None):
 	elif(choice == 3):
 
 		return '140'			### itag for mp4 audio ###
+
+	else:
+
+		return '1'
 
 def emptyUrl():
 
@@ -343,6 +527,38 @@ def set_bg_to_blue():
 
     middleframe.configure(background="lightblue")
 
+def set_bg_to_orange():
+
+	root.configure(background="orange")
+
+	topframe.configure(background="orange")
+
+	middleframe.configure(background="orange")
+
+def set_bg_to_violet():
+
+	root.configure(background="violet")
+
+	topframe.configure(background="violet")
+
+	middleframe.configure(background="violet")
+
+def set_bg_to_yellow():
+
+	root.configure(background="yellow")
+
+	topframe.configure(background="yellow")
+
+	middleframe.configure(background="yellow")
+
+def set_bg_to_lightgreen():
+
+	root.configure(background="lightgreen")
+
+	topframe.configure(background="lightgreen")
+
+	middleframe.configure(background="lightgreen")
+
 def open_downloaded_vedio():
 
 	global path
@@ -359,7 +575,7 @@ def open_downloaded_vedio():
 
 		url = lastline.split(",")
 
-		url = url[2]
+		url = url[3]
 
 	print(url)
 
@@ -446,7 +662,7 @@ if __name__ == '__main__':
 
 	root.title("YouTube Multi Video Downloader")
 
-	root.geometry("800x650")
+	root.geometry("800x670")
 
 	root.resizable(width = False , height = False)
 	
@@ -466,29 +682,37 @@ if __name__ == '__main__':
 
 	darkcolor.pack(side = LEFT)
 
-	icon_img = PhotoImage(file="youtubedownloader.png")
+	icon_img = PhotoImage(file="image_resource/youtubedownloader.png")
 
 	icon_img = icon_img.subsample(1,1)
 
 	icon_button = Button(topframe,image = icon_img , command = open_youtube)
 
-	icon_button.pack(side = LEFT,padx = 100)
+	icon_button.pack(side = LEFT,padx = 75)
 
 	lightcolor = Frame(topframe)
 
 	lightcolor.pack(side = LEFT)
 
-	red_image = PhotoImage(file = "red.png")
+	red_image = PhotoImage(file = "image_resource/red.png")
     
-	brown_image = PhotoImage(file = "brown.png")
+	brown_image = PhotoImage(file = "image_resource/brown.png")
     
-	pink_image = PhotoImage(file = "pink.png")
+	pink_image = PhotoImage(file = "image_resource/pink.png")
 
-	grey_image = PhotoImage(file = "grey.png")
+	grey_image = PhotoImage(file = "image_resource/grey.png")
 
-	green_image = PhotoImage(file = "green.png")
+	green_image = PhotoImage(file = "image_resource/green.png")
 
-	blue_image = PhotoImage(file = "blue.png")
+	blue_image = PhotoImage(file = "image_resource/blue.png")
+
+	violet_image = PhotoImage(file = "image_resource/violet.png")
+
+	orange_image = PhotoImage(file = "image_resource/orange.png")
+
+	yellow_image = PhotoImage(file = "image_resource/yellow.png")
+
+	lightgreen_image = PhotoImage(file = "image_resource/lightgreen.png")
 
 	red_image = red_image.subsample(4,4)
     
@@ -502,6 +726,14 @@ if __name__ == '__main__':
 
 	blue_image = blue_image.subsample(4,4)
 
+	violet_image = violet_image.subsample(4,4)
+
+	orange_image = orange_image.subsample(4,4)
+
+	yellow_image = yellow_image.subsample(4,4)
+
+	lightgreen_image = lightgreen_image.subsample(4,4)
+
 	red_button = Button(darkcolor,image = red_image,command = set_bg_to_red)
     
 	red_button.pack(side = LEFT)
@@ -514,6 +746,14 @@ if __name__ == '__main__':
     
 	green_button.pack(side = LEFT)
 
+	orange_button = Button(darkcolor,image = orange_image,command = set_bg_to_orange)
+	   
+	orange_button.pack(side = LEFT)
+
+	violet_button = Button(darkcolor,image = violet_image,command = set_bg_to_violet)
+	   
+	violet_button.pack(side = LEFT)
+
 	pink_button = Button(lightcolor,image = pink_image,command = set_bg_to_pink)
     
 	pink_button.pack(side = LEFT)
@@ -525,6 +765,14 @@ if __name__ == '__main__':
 	blue_button = Button(lightcolor,image = blue_image,command = set_bg_to_blue)
     
 	blue_button.pack(side = LEFT)
+
+	yellow_button = Button(lightcolor,image = yellow_image,command = set_bg_to_yellow)
+	   
+	yellow_button.pack(side = LEFT)
+
+	lightgreen_button = Button(lightcolor,image = lightgreen_image,command = set_bg_to_lightgreen)
+	   
+	lightgreen_button.pack(side = LEFT)
 
 	label1 = Label(root,text="paste YouTube Vedio link here",fg="red",bg="yellow",font=(" ",15,"bold"))
 
@@ -582,9 +830,9 @@ if __name__ == '__main__':
 
 	#linkerror.pack(pady = (0,10))
 
-	Savelabel = Label(root,text="select download location",fg="red",bg="yellow",font = ("Agency FB",15,"bold"))
+	label2 = Label(root,text="select download location",fg="red",bg="yellow",font = ("Agency FB",15,"bold"))
 
-	Savelabel.pack(pady = 10)
+	label2.pack(pady = 10)
 
 	Selectpath_button = Button(root,width = 20,bg = "black",fg = "white", text = "choose folder",font = ("verdana",10,"bold"),command = select_path)
 
@@ -594,11 +842,11 @@ if __name__ == '__main__':
 	
 	#filelocationError.pack(pady = (0,0))
 
-	selectQuality = Label(root,text="select Quality of vedio to download",font = ("verdana",15,"bold"),fg="red",bg="yellow")
+	label3 = Label(root,text="select Quality of vedio to download",font = ("verdana",15,"bold"),fg="red",bg="yellow")
 
-	selectQuality.pack(pady = 10)
+	label3.pack(pady = 10)
 
-	Quality = ["mp4 1080p vedio only","mp4 720p","mp4 360p","mp4 audio only"]
+	Quality = ["mp4 1080p vedio only","mp4 720p","mp4 360p","mp4 audio only","thumbnail"]
 
 	quality = StringVar()
 
@@ -606,15 +854,15 @@ if __name__ == '__main__':
 
 	choices.pack()
 
-	choices.current(3)
+	choices.current(1)
 
 	choices.bind("<<ComboboxSelected>>",select_Quality)
 
-	label2 = Label(root,text="open downoaded vedio",font = ("verdana",15,"bold"),fg="red",bg="yellow")
+	label4 = Label(root,text="open downoaded vedio",font = ("verdana",15,"bold"),fg="red",bg="yellow")
 
-	label2.pack(pady = (10,0))
+	label4.pack(pady = (10,0))
 
-	vedio_image = PhotoImage(file = "/home/aman/Documents/my_projects/YouTube_Downloader/vedio.png")
+	vedio_image = PhotoImage(file = "image_resource/vedio.png")
 	
 	vedio_image = vedio_image.subsample(1,1)
 	
