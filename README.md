@@ -13,7 +13,7 @@ type command in terminal : **pip install pytube**  check latest version [here](h
 ## How to use
 
 step 1: clone or download repo to your system \
-step 2: run YoutubeVedioDownloader2.py file - python3 YoutubeVedioDownloader2.py
+step 2: run YoutubeVedioDownloader.py file - python3 YoutubeVedioDownloader.py
 
 ## References
 
