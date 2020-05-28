@@ -54,6 +54,8 @@ def single_download():
 
 			title = yt.title
 
+			file_name = re.sub(r"[^a-zA-Z0-9_-]"," ",title)
+
 			print(title)
 			print()
 
@@ -78,11 +80,11 @@ def single_download():
 
 			label3.config(text = "RATING : "+str(yt.rating)+" VIEWS : "+str(yt.views)+" DURATION : "+strftime("%H:%M:%S", gmtime(yt.length)) , font = ("",14,"bold"))
 
-			request.urlretrieve(yt.thumbnail_url,path+"/"+yt.title+".jpeg")
+			request.urlretrieve(yt.thumbnail_url,path+"/"+file_name+".jpeg")
 
 			on_progress2(1,1)
 
-			location = path+"/"+title+".jpeg"
+			location = path+"/"+file_name+".jpeg"
 
 			print(location)
 
@@ -95,6 +97,8 @@ def single_download():
 			yt = YouTube(url,on_progress_callback=on_progress)
 
 			title = yt.title
+
+			file_name = re.sub(r"[^a-zA-Z0-9_-]"," ",title)
 
 			print(title)
 			print()
@@ -136,7 +140,7 @@ def single_download():
 
 			print("download started")
 
-			stream.download(path)
+			stream.download(path,filename=file_name)
 
 			print("download completed ,,,,,,,")
 
@@ -144,9 +148,17 @@ def single_download():
 
 			label2.config(text = "{}/{} Vedios downloaded".format(1,1))
 
-			title = re.sub('[\|\/\?\*\+\^\.\$\,:]+','',title)
+			location = None
 
-			location = path+"/"+title+".mp4"
+			if(itag == "140"):
+
+				os.rename(path + "/"+ file_name + ".mp4", path+ "/"+ file_name + ".mp3")
+
+				location = path+"/"+file_name+".mp3"
+
+			else:
+
+				location = path+"/"+file_name+".mp4"
 
 			print(location)
 
@@ -185,6 +197,8 @@ def multplie_download():
 
 				title = yt.title
 
+				file_name = re.sub(r"[^a-zA-Z0-9_-]"," ",title)
+
 				print(title)
 				print()
 
@@ -211,13 +225,13 @@ def multplie_download():
 
 				root.update_idletasks()
 
-				request.urlretrieve(yt.thumbnail_url,path+"/"+yt.title+".jpeg")
+				request.urlretrieve(yt.thumbnail_url,path+"/"+file_name+".jpeg")
 
 				root.update_idletasks()
 
 				on_progress2(i+1,l)
 
-				location = path+"/"+title+".jpeg"
+				location = path+"/"+file_name+".jpeg"
 
 				#print(location)
 
@@ -233,6 +247,8 @@ def multplie_download():
 				yt = YouTube(url,on_progress_callback=on_progress)
 
 				title = yt.title
+
+				file_name = re.sub(r"[^a-zA-Z0-9_-]"," ",title)
 
 				print(title)
 				print()
@@ -276,9 +292,17 @@ def multplie_download():
 
 				print("{} vedio downloaded \n ".format(i+1))
 
-				title = re.sub('[\|\/\?\*\+\^\.\$\,:]+','',title)
+				location = None
 
-				location = path+"/"+title+".mp4"
+				if(itag == "140"):
+
+					os.rename(path + "/" + file_name + ".mp4", path + "/" + file_name + ".mp3")
+
+					location = path+"/"+file_name+".mp3"
+
+				else:
+
+					location = path+"/"+file_name+".mp4"
 
 				print(location)
 
@@ -848,7 +872,7 @@ if __name__ == '__main__':
 
 	label3.pack(pady = 10)
 
-	Quality = ["mp4 1080p vedio only","mp4 720p","mp4 360p","mp4 audio only","thumbnail"]
+	Quality = ["mp4 1080p vedio only","mp4 720p","mp4 360p","mp3 audio only","thumbnail"]
 
 	quality = StringVar()
 
