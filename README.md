@@ -23,4 +23,6 @@ step 2: run YoutubeVedioDownloader.py file - python3 YoutubeVedioDownloader.py
 [https://www.geeksforgeeks.org/radiobutton-in-tkinter-python/](https://www.geeksforgeeks.org/radiobutton-in-tkinter-python/)\
 [https://www.geeksforgeeks.org/python-add-image-on-a-tkinter-button/](https://www.geeksforgeeks.org/python-add-image-on-a-tkinter-button/)\
 [https://www.geeksforgeeks.org/progressbar-widget-in-tkinter-python/](https://www.geeksforgeeks.org/progressbar-widget-in-tkinter-python/)\
-[https://stackoverflow.com/questions/35851281/python-finding-the-users-downloads-folder](https://stackoverflow.com/questions/35851281/python-finding-the-users-downloads-folder)
+[https://stackoverflow.com/questions/35851281/python-finding-the-users-downloads-folder](https://stackoverflow.com/questions/35851281/python-finding-the-users-downloads-folder)\
+[https://github.com/adaptlearning/adapt_authoring/wiki/Installing-FFmpeg](https://github.com/adaptlearning/adapt_authoring/wiki/Installing-FFmpeg)\
+[https://stackoverflow.com/questions/28219049/combining-an-audio-file-with-video-file-in-python](https://stackoverflow.com/questions/28219049/combining-an-audio-file-with-video-file-in-python)
