@@ -14,31 +14,121 @@ import subprocess, sys , os
 
 default_path = str(os.path.join(Path.home(), "Downloads"))
 
-print(default_path)
+print("your default path to download vedio is : "+default_path+"\nHowever you can change it any time by clicking choose folder Button:)")
 
 path = default_path
 
 file_size = 0
 
+with open("history.txt","a") as fp:
+
+	if os.stat("history.txt").st_size == 0:
+
+	    fp.write("Date-Time , Vedio Title , Vedio Type , Location , Vedio Link \n")
+
 def on_progress(stream, chunk,bytes_remaining):
 
 	global file_size
 
-	vedio_downloaded = (float(abs(bytes_remaining-file_size)/file_size))*float(100)
+	vedio_downloaded = abs(bytes_remaining-file_size)
 
-	progress_bar['value'] = vedio_downloaded
+	downloaded_percent = (float(vedio_downloaded/file_size))*float(100)
+
+	progress_bar['value'] = downloaded_percent
 
 	root.update_idletasks()
 
-	print(vedio_downloaded)
+	print(downloaded_percent)
 
-	desc_button.config(text = "{:.2f} % Downloaded".format(vedio_downloaded))
+	desc_button.config(text = "{:.2f} % Downloaded".format(downloaded_percent))
+
+	label2.config(text = "{}/{} Vedios downloaded [{:.2f}/{:.2f}]".format(0,1,vedio_downloaded/(1024*1024),(file_size/(1024*1024))))
 
 def on_progress2(current,total):
 
 	progress_bar['value'] = (current/total*100)
 
 	root.update_idletasks()
+
+def download_HD(url):
+
+	global file_size
+
+	try:
+
+		yt = YouTube(url,on_progress_callback=on_progress)
+
+		title = yt.title
+
+		file_name = re.sub(r"[^a-zA-Z0-9_-]","",title)
+
+		label2.config(text = "{}/{} Vedios downloaded".format(0,1))
+
+		label4.config(text = "wait for vedio to download completly")
+
+		label3.config(text = "RATING : "+str(yt.rating)+" VIEWS : "+str(yt.views)+" DURATION : "+strftime("%H:%M:%S", gmtime(yt.length)) , font = ("",14,"bold"))
+
+		root.update_idletasks()
+
+		stream = yt.streams.get_by_itag("140")
+
+		file_size = stream.filesize + yt.streams.get_by_itag("137").filesize
+
+		print(stream.title)
+		
+		#file_size = stream.filesize
+		
+		print(stream.filesize//(1024*1024))
+
+		print("audio download started")
+
+		print("vedio download started")
+
+		stream.download(path,filename="audio")
+
+		print("audio downloaded ,,,,,,,")
+
+		print(path)
+
+		os.rename(path + "/audio"+ ".mp4", path+ "/audio" + ".mp3")
+
+		stream = yt.streams.get_by_itag("137")
+
+		print(stream.title)
+		
+		#file_size = stream.filesize
+		
+		print(stream.filesize//(1024*1024))
+
+		print("vedio download started")
+
+		stream.download(path,filename="vedio")
+
+		print("vedio download completed ,,,,,,,")
+
+		print(path)
+		print()
+
+		print("merging audio and vedio file with ffmpeg as pytube does not support 1080p stream with audio")
+		print()
+
+		label2.config(text = "{}/{} Vedios downloaded".format(1,1))
+
+		cmd = 'ffmpeg -y -i ' + path +'/audio.mp3  -r 30 -i ' +path + '/vedio.mp4  -filter:a aresample=async=1 -c:a flac -c:v copy '+ path+ "/" + file_name+'.mkv'
+
+		subprocess.call(cmd, shell=True)
+
+		location = path+"/"+file_name+".mkv"
+
+		print(location)
+
+		with open("history.txt","a") as fp:
+
+			fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+Quality[choices.current()]+" ,"+location+", "+url)
+
+	except Exception as e:
+
+		print(e)
 
 def single_download():
 
@@ -48,7 +138,11 @@ def single_download():
 
 		url = url_field.get()
 
-		if(select_Quality() == "1"):
+		if(select_Quality() == "1080p"):
+
+			download_HD(url)
+
+		elif(select_Quality() == "1"):
 
 			yt = YouTube(url)
 
@@ -191,7 +285,11 @@ def multplie_download():
 
 			url = playlist_url[i]
 
-			if(select_Quality() == "1"):
+			if(select_Quality() == "1080p"):
+
+				download_HD()
+
+			elif(select_Quality() == "1"):
 
 				yt = YouTube(url)
 
@@ -474,25 +572,29 @@ def select_path():
 	if(len(path)<=1):
 		path = default_path
 	
-	Savelabel.config(text="selected path : "+path , font = ("verdana",10,"bold"))
+	label2.config(text="selected path : "+path , font = ("verdana",10,"bold"))
 
 def select_Quality(event = None):
 
 	choice = choices.current()
 
 	if(choice == 0):
+
+		return "1080p"
+
+	if(choice == 1):
 		
 		return '137'			### itag for 1080p vedio ###
 
-	elif(choice == 1):
+	elif(choice == 2):
 
 		return '22'				### itag for 720p vedio ###
 
-	elif(choice == 2):
+	elif(choice == 3):
 
 		return '18'				### itag for 360p vedio ###
 
-	elif(choice == 3):
+	elif(choice == 4):
 
 		return '140'			### itag for mp4 audio ###
 
@@ -627,7 +729,7 @@ def open_downloaded_vedio():
 	    subprocess.Popen(['xdg-open', url],
 	                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-	print("Sorry downloaded file can not be open try to open it by going to path : "+path)
+	print("Be patient your vedio will play soon \n You can also go to this "+path+" in your file manager to open it manulay")
 
 def open_youtube():
 
@@ -872,7 +974,7 @@ if __name__ == '__main__':
 
 	label3.pack(pady = 10)
 
-	Quality = ["mp4 1080p vedio only","mp4 720p","mp4 360p","mp3 audio only","thumbnail"]
+	Quality = ["mkv 1080p HD","mp4 1080p vedio only","mp4 720p","mp4 360p","mp3 audio only","thumbnail"]
 
 	quality = StringVar()
 
@@ -880,7 +982,7 @@ if __name__ == '__main__':
 
 	choices.pack()
 
-	choices.current(1)
+	choices.current(0)
 
 	choices.bind("<<ComboboxSelected>>",select_Quality)
 
