@@ -6,9 +6,18 @@ A desktop application to download youtube vedio and playsit by pasting link of y
 
 ![Screen shot](https://github.com/AmanKathait15/YouTube-Vedio-or-Playlist-Downloader-Desktop-Application/blob/master/readme_resource/ss3.png)
  
-## to install pytube library in your system
+## module used
+
+1 tkinter\
+2 threading\
+3 time\
+4 pathlib
+5 urllib\
+6 pytube
  
-type command in terminal : **pip install pytube**  check latest version [here](https://pypi.org/project/pytube/)
+type command in terminal : **pip install pytube3**  check latest version [here](https://pypi.org/project/pytube3/)\
+
+[ffmpeg](https://github.com/adaptlearning/adapt_authoring/wiki/Installing-FFmpeg) is used to combine audio and vedio file for higher quality
  
 ## How to use
 
