@@ -12,6 +12,8 @@ from pathlib import Path
 
 import subprocess, sys , os
 
+print("\n\n<<<<<<<<<<<<<<<<< Default Path >>>>>>>>>>>>>>>>>>\n")
+
 default_path = str(os.path.join(Path.home(), "Downloads"))
 
 print("your default path to download vedio is : "+default_path+"\nHowever you can change it any time by clicking choose folder Button:)")
@@ -19,6 +21,10 @@ print("your default path to download vedio is : "+default_path+"\nHowever you ca
 path = default_path
 
 file_size = 0
+
+sizes = []
+
+no_of_vedios = 1
 
 with open("history.txt","a") as fp:
 
@@ -42,7 +48,7 @@ def on_progress(stream, chunk,bytes_remaining):
 
 	desc_button.config(text = "{:.2f} % Downloaded".format(downloaded_percent))
 
-	label2.config(text = "{}/{} Vedios downloaded [{:.2f}/{:.2f}]".format(0,1,vedio_downloaded/(1024*1024),(file_size/(1024*1024))))
+	label2.config(text = "{}/{} Vedios downloaded [{:.2f}/{:.2f}] MB".format(0,no_of_vedios,vedio_downloaded/(1024*1024),(file_size)/(1024*1024)))
 
 def on_progress2(current,total):
 
@@ -60,63 +66,65 @@ def download_HD(url):
 
 		title = yt.title
 
-		file_name = re.sub(r"[^a-zA-Z0-9_-]","",title)
-
-		label2.config(text = "{}/{} Vedios downloaded".format(0,1))
-
-		label4.config(text = "wait for vedio to download completly")
-
-		label3.config(text = "RATING : "+str(yt.rating)+" VIEWS : "+str(yt.views)+" DURATION : "+strftime("%H:%M:%S", gmtime(yt.length)) , font = ("",14,"bold"))
+		file_name = re.sub(r"[^a-zA-Z0-9]","",title) + "_" + str(choices.current())
 
 		root.update_idletasks()
 
+		itag = select_Quality()
+
 		stream = yt.streams.get_by_itag("140")
 
-		file_size = stream.filesize + yt.streams.get_by_itag("137").filesize
-
-		print(stream.title)
-		
-		#file_size = stream.filesize
-		
-		print(stream.filesize//(1024*1024))
+		file_size = yt.streams.get_by_itag("140").filesize + yt.streams.get_by_itag(itag).filesize
 
 		print("audio download started")
 
-		print("vedio download started")
+		Audio = "/"+file_name + "audio"
 
-		stream.download(path,filename="audio")
+		Vedio = "/"+file_name + "vedio"
+
+		stream.download(path,filename = Audio)
 
 		print("audio downloaded ,,,,,,,")
 
 		print(path)
 
-		os.rename(path + "/audio"+ ".mp4", path+ "/audio" + ".mp3")
+		os.rename(path + Audio + ".mp4", path+ Audio + ".mp3")
 
-		stream = yt.streams.get_by_itag("137")
+		stream = yt.streams.get_by_itag(itag)
 
 		print(stream.title)
-		
-		#file_size = stream.filesize
-		
-		print(stream.filesize//(1024*1024))
 
 		print("vedio download started")
 
-		stream.download(path,filename="vedio")
+		stream.download(path,filename = Vedio)
 
 		print("vedio download completed ,,,,,,,")
 
 		print(path)
 		print()
 
-		print("merging audio and vedio file with ffmpeg as pytube does not support 1080p stream with audio")
+		print("merging audio and vedio file with ffmpeg as pytube does not support 1080p and higher stream with audio")
 		print()
 
 		label2.config(text = "{}/{} Vedios downloaded".format(1,1))
 
-		cmd = 'ffmpeg -y -i ' + path +'/audio.mp3  -r 30 -i ' +path + '/vedio.mp4  -filter:a aresample=async=1 -c:a flac -c:v copy '+ path+ "/" + file_name+'.mkv'
+		if(itag == "137"):
 
-		subprocess.call(cmd, shell=True)
+			cmd = 'ffmpeg -y -i ' + path+ Audio +'.mp3  -r 30 -i ' +path + Vedio + '.mp4  -filter:a aresample=async=1 -c:a flac -c:v copy '+ path+ "/" + file_name+'.mkv'
+
+			subprocess.call(cmd, shell=True)
+
+			os.remove(path + Vedio + '.mp4')
+
+		else:
+
+			cmd = 'ffmpeg -y -i ' + path+ Audio +'.mp3  -r 30 -i ' +path + Vedio + '.webm  -filter:a aresample=async=1 -c:a flac -c:v copy '+ path+ "/" + file_name+'.mkv'
+
+			subprocess.call(cmd, shell=True)
+
+			os.remove(path + Vedio + '.webm')
+
+		os.remove(path + Audio + '.mp3')
 
 		location = path+"/"+file_name+".mkv"
 
@@ -124,11 +132,11 @@ def download_HD(url):
 
 		with open("history.txt","a") as fp:
 
-			fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+Quality[choices.current()]+" ,"+location+", "+url)
+			fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+choices['values'][choices.current()]+" ,"+location+", "+url)
 
 	except Exception as e:
 
-		print(e)
+		print("\n>>>>>>>>>>>>>>> Error Occor <<<<<<<<<<<<<<<<< \n"+str(e))
 
 def single_download():
 
@@ -138,7 +146,7 @@ def single_download():
 
 		url = url_field.get()
 
-		if(select_Quality() == "1080p"):
+		if(select_Quality() in ("313","271","137")):
 
 			download_HD(url)
 
@@ -150,29 +158,7 @@ def single_download():
 
 			file_name = re.sub(r"[^a-zA-Z0-9_-]"," ",title)
 
-			print(title)
-			print()
-
-			print(yt.description)
-			print()
-
-			print(yt.rating)
-			print()
-
-			print(yt.views)
-			print()
-
-			print(yt.length)
-			print()
-
-			print(yt.thumbnail_url)
-			print()
-
 			label2.config(text = "{}/{} thumbnail downloaded".format(0,1))
-
-			label4.config(text = "wait for thumbnail to download completly")
-
-			label3.config(text = "RATING : "+str(yt.rating)+" VIEWS : "+str(yt.views)+" DURATION : "+strftime("%H:%M:%S", gmtime(yt.length)) , font = ("",14,"bold"))
 
 			request.urlretrieve(yt.thumbnail_url,path+"/"+file_name+".jpeg")
 
@@ -180,11 +166,11 @@ def single_download():
 
 			location = path+"/"+file_name+".jpeg"
 
-			print(location)
+			print("\n>>>>>>>>>>>>>>> download location <<<<<<<<<<<<<<<<< \n"+location)
 
 			with open("history.txt","a") as fp:
 
-				fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+Quality[choices.current()]+" ,"+location+", "+url)
+				fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+choices['values'][choices.current()]+" ,"+location+", "+url)
 
 		else:
 
@@ -192,31 +178,7 @@ def single_download():
 
 			title = yt.title
 
-			file_name = re.sub(r"[^a-zA-Z0-9_-]"," ",title)
-
-			print(title)
-			print()
-
-			print(yt.description)
-			print()
-
-			print(yt.rating)
-			print()
-
-			print(yt.views)
-			print()
-
-			print(yt.length)
-			print()
-
-			print(yt.thumbnail_url)
-			print()
-
-			label2.config(text = "{}/{} Vedios downloaded".format(0,1))
-
-			label4.config(text = "wait for vedio to download completly")
-
-			label3.config(text = "RATING : "+str(yt.rating)+" VIEWS : "+str(yt.views)+" DURATION : "+strftime("%H:%M:%S", gmtime(yt.length)) , font = ("",14,"bold"))
+			file_name = re.sub(r"[^a-zA-Z0-9_-]","",title)+ str(choices['values'][choices.current()])
 
 			root.update_idletasks()
 
@@ -254,20 +216,20 @@ def single_download():
 
 				location = path+"/"+file_name+".mp4"
 
-			print(location)
+			print("\n>>>>>>>>>>>>>>> download location <<<<<<<<<<<<<<<<< \n"+location)
 
 			with open("history.txt","a") as fp:
 
-				fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+Quality[choices.current()]+" ,"+location+", "+url)
+				fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+choices['values'][choices.current()]+" ,"+location+", "+url)
 
 	except Exception as e:
 
-		print(e)
+		print("\n>>>>>>>>>>>>>>> Error Occor <<<<<<<<<<<<<<<<< \n"+str(e))
 
 
 def multplie_download():
 
-	global file_size
+	global file_size , no_of_vedios
 
 	try:
 
@@ -277,7 +239,9 @@ def multplie_download():
 
 		l = len(playlist_url)
 
-		print(l)
+		no_of_vedios = l
+
+		print("\n>>>>>>>>>>>>>>> Number of vedios in playlist <<<<<<<<<<<<<<<<< \n"+str(l))
 
 		for i in range(l):
 
@@ -285,7 +249,9 @@ def multplie_download():
 
 			url = playlist_url[i]
 
-			if(select_Quality() == "1080p"):
+			print("\n>>>>>>>>>>>>>>> Vedio url<<<<<<<<<<<<<<<<< \n"+str(url))
+
+			if(select_Quality() in ("313","271","137")):
 
 				download_HD()
 
@@ -295,25 +261,7 @@ def multplie_download():
 
 				title = yt.title
 
-				file_name = re.sub(r"[^a-zA-Z0-9_-]"," ",title)
-
-				print(title)
-				print()
-
-				print(yt.description)
-				print()
-
-				print(yt.rating)
-				print()
-
-				print(yt.views)
-				print()
-
-				print(yt.length)
-				print()
-
-				print(yt.thumbnail_url)
-				print()
+				file_name = re.sub(r"[^a-zA-Z0-9_-]"," ",title)+ str(choices['values'][choices.current()])
 
 				label4.config(text = "wait for thumbnail to download completly")
 
@@ -331,11 +279,11 @@ def multplie_download():
 
 				location = path+"/"+file_name+".jpeg"
 
-				#print(location)
+				print("\n>>>>>>>>>>>>>>> download location <<<<<<<<<<<<<<<<< \n"+location)
 
 				with open("history.txt","a") as fp:
 
-					fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+Quality[choices.current()]+" ,"+location+", "+url)
+					fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+choices['values'][choices.current()]+" ,"+location+", "+url)
 
 
 			else:
@@ -346,7 +294,7 @@ def multplie_download():
 
 				title = yt.title
 
-				file_name = re.sub(r"[^a-zA-Z0-9_-]"," ",title)
+				file_name = re.sub(r"[^a-zA-Z0-9_-]"," ",title)+ str(choices['values'][choices.current()])
 
 				print(title)
 				print()
@@ -398,22 +346,28 @@ def multplie_download():
 
 					location = path+"/"+file_name+".mp3"
 
+				elif(itag == "140"):
+
+					os.rename(path + "/" + file_name + ".mp4", path + "/" + file_name + ".mp3")
+
+					location = path+"/"+file_name+".mp3"
+
 				else:
 
 					location = path+"/"+file_name+".mp4"
 
-				print(location)
+				print("\n>>>>>>>>>>>>>>> download location <<<<<<<<<<<<<<<<< \n"+location)
 
 				with open("history.txt","a") as fp:
 
-					fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+Quality[choices.current()]+" ,"+location+", "+url)
+					fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+choices['values'][choices.current()]+" ,"+location+", "+url)
 
 
 		print("entire playlist downoaded ")
 
 	except Exception as e:
 
-		raise e
+		print("\n>>>>>>>>>>>>>>> Error Occor <<<<<<<<<<<<<<<<< \n"+str(e))
 
 
 def start_downloading():
@@ -422,17 +376,15 @@ def start_downloading():
 
 		ch = radioVar.get()
 
-		print(ch)
-
 		if(ch=="1"):
 
-			print("single")
+			print("\n>>>>>>>>>>>>> You are downloading a single vedio <<<<<<<<<<<<\n")
 
 			single_download()
 
 		else:
 
-			print("multiple")
+			print("\n>>>>>>>>>>>>> You are downloading a playlist <<<<<<<<<<<<<<<\n")
 
 			multplie_download()
 		
@@ -458,7 +410,7 @@ def start_downloading():
 
 		pink_button.config(state = NORMAL)
 
-		brown_button.config(state = DISABLED)
+		brown_button.config(state = NORMAL)
 
 		yellow_button.config(state = NORMAL)
 
@@ -472,17 +424,15 @@ def start_downloading():
 
 		desc_button.config(text = "History")
 
-		label1.config(text = " paste YouTube Vedio link here ")
+		label1.config(text=" Your download completed enjoy :) ",fg="yellow",bg="green",font = ("Agency FB",15,"bold"))
 
 		label2.config(text="select download location",fg="red",bg="yellow",font = ("Agency FB",15,"bold"))
 
 		label3.config(text="select quality of vedio to download",fg="red",bg="yellow",font = ("Agency FB",15,"bold"))
 
-		label4.config(text="open downloaded vedio",fg="red",bg="yellow",font = ("Agency FB",15,"bold"))
-
 	except Exception as e:
 		
-		print(e)
+		print("\n>>>>>>>>>>>>>>> Error Occor <<<<<<<<<<<<<<<<< \n"+str(e))
 
 def start_downloading_thread():
 
@@ -490,37 +440,37 @@ def start_downloading_thread():
 
 	if(len(url)<2):
 
-		label1.config(text = " Url field is empty ")
+		label1.config(text = " Url field is empty ",fg="yellow",bg="red")
 
-		print("url field is empty")
+		print("\nERROR MESSAGE : >>>>>>>>>>>>>>>>>>>>>>>>> url field is empty <<<<<<<<<<<<<<<<<<\n")
 
 		return
 
 	if("https://www.youtube.com/" not in url):
 
-		label1.config(text = " Please Enter Valid Url ")
-
-		print("invlaid url")
+		label1.config(text = " Please Enter Valid Url ",fg="yellow",bg="red")
 
 		return
 
 	if(radioVar.get()=="1" and "playlist" in url):
 
-		label1.config(text = "link not match with its type")
+		label1.config(text = "link not match with its type",fg="yellow",bg="red")
 
-		print("you are trying to download playlist by selcting single vedio Radiobutton")
+		print("\nERROR MESSAGE : >>>>>>>>>>>>>>>>>>>>>>>>> you are trying to download playlist by selcting single vedio Radiobutton <<<<<<<<<<<<<<<<<<\n")
 
 		return
 
 	if(radioVar.get()=="2" and "watch" in url):
 
-		label1.config(text = " link not match with its type ")
+		label1.config(text = " link not match with its type ",fg="yellow",bg="red")
 
-		print("you are trying to download single vedio by selcting playlist Radiobutton")
+		print("\nERROR MESSAGE : >>>>>>>>>>>>>>>>>>>>>>>>> you are trying to download single vedio by selcting playlist Radiobutton <<<<<<<<<<<<<<<<<<\n")
 
 		return
 
-	label1.config(text = "Your download started :) ")
+	print("\n>>>>>>>>>>>>>>>> Vedio Download Started :) <<<<<<<<<<<<<<<<< \n")
+
+	label1.config(text = " Your download started :) ",fg="blue",bg="lightgreen",font = ("",15,"bold"))
 
 	ClearUrl_button.config(text = "please")
 	#ClearUrl_button['text']="please"
@@ -571,40 +521,376 @@ def select_path():
 
 	if(len(path)<=1):
 		path = default_path
+
+	tmp = path
+
+	if(len(tmp)>55):
+
+		tmp = tmp[:55]
 	
-	label2.config(text="selected path : "+path , font = ("verdana",10,"bold"))
+	label2.config(text="Path : "+str(tmp) , font = ("verdana",14,"bold"))
 
 def select_Quality(event = None):
 
+	global sizes
+
 	choice = choices.current()
 
-	if(choice == 0):
+	itag = None
 
-		return "1080p"
+	if(choice == 7):
 
-	if(choice == 1):
+		itag = '313'			### itag for 2160p vedio ###
+
+	elif(choice == 6):
+
+		itag = '271'			### itag for 1440p vedio ###
+
+	elif(choice == 5):
 		
-		return '137'			### itag for 1080p vedio ###
-
-	elif(choice == 2):
-
-		return '22'				### itag for 720p vedio ###
-
-	elif(choice == 3):
-
-		return '18'				### itag for 360p vedio ###
+		itag = '137'			### itag for 1080p vedio ###
 
 	elif(choice == 4):
 
-		return '140'			### itag for mp4 audio ###
+		itag = '22'				### itag for 720p vedio ###
+
+	elif(choice == 3):
+
+		itag = '18'				### itag for 360p vedio ###
+
+	elif(choice == 2):			
+
+		itag = '251'			### itag for webm audio 160 kbps ###
+
+	elif(choice == 1):
+
+		itag = '140'			### itag for mp4 audio ###
 
 	else:
 
-		return '1'
+		itag = '1'				### for vedio thumbnail download ###
+
+	label3.config(text = "Quality : " + choices['values'][choice] +" Size : {:.2f} MB".format(sizes[choice]))
+
+	return itag
+
+def check_url(url_var):
+
+	global sizes , path
+
+	url = url_var.get()
+
+	if(len(url)<1):
+
+		label1.config(text = " Url field is empty ",bg="red",fg="yellow")
+
+		#print("url field is empty")
+
+		return
+
+	if("https://www.youtube.com/" not in url):
+
+		label1.config(text = " Please Enter Valid Url ",bg="red",fg="yellow")
+
+		#print("invlaid url")
+
+		return
+
+	if(radioVar.get()=="1" and "playlist" in url):
+
+		label1.config(text = "Error link not match with its type ",bg="red",fg="yellow")
+
+		print("\n<<<<<<<<<<<<<<<<<<<<<<<< Error link not match with its type >>>>>>>>>>>>>>>>>>>>>>>>\n")
+
+		print("you are trying to download playlist by selcting single vedio Radiobutton")
+
+		return
+
+	if(radioVar.get()=="2" and "watch" in url):
+
+		label1.config(text = "Error link not match with its type ",bg="red",fg="yellow")
+
+		print("\n<<<<<<<<<<<<<<<<<<<<<<<< Error link not match with its type >>>>>>>>>>>>>>>>>>>>>>>>\n")
+
+		print("you are trying to download single vedio by selcting playlist Radiobutton")
+
+		return
+
+	if(radioVar.get()=="1" and "watch" in url):
+
+		label1.config(text = " processing vedio link wait .. ",bg="red",fg="yellow")
+
+		root.update_idletasks()
+
+		print("\n<<<<<<<<<<<<<<<<<<<< Vedio Url >>>>>>>>>>>>>>>>>\n\n"+str(url))
+
+		yt = YouTube(url)
+
+		title = str(yt.title)
+
+		print("\n<<<<<<<<<<<<<<<<<<<< Vedio Title >>>>>>>>>>>>>>>>>\n\n"+title)
+		print()
+
+		print("\n<<<<<<<<<<<<<<<<<<<< DESCRIPTION >>>>>>>>>>>>>>>>>\n\n"+yt.description)
+		print()
+
+		print("\n>>>>>>>>>>>>>>> Rating : {:.2f}".format(yt.rating))
+		print()
+
+		print("\n>>>>>>>>>>>>>>> Views : {}".format(yt.views))
+		print()
+
+		print("\n>>>>>>>>>>>>>>> Duration : "+strftime("%H:%M:%S", gmtime(yt.length)))
+		print()
+
+		print("\n>>>>>>>>>>>>>>> Vedio thumbnail : "+yt.thumbnail_url)
+		print()
+
+		title = re.sub(r'[^a-zA-Z0-9_-]','',title)
+
+		if(len(title)>55):
+
+			title = title[0:55]
+
+		quality = ["thumbnail"]
+
+		sizes = [0.5]
+
+		if(yt.streams.get_by_itag("140") != None):
+
+			quality.append("mp3 audio")
+
+			sizes.append((yt.streams.get_by_itag("140").filesize)/(1024*1024))
+
+		if(yt.streams.get_by_itag("251") != None):
+
+			quality.append("webm audio")
+
+			sizes.append((yt.streams.get_by_itag("251").filesize)/(1024*1024))
+
+		if(yt.streams.get_by_itag("18") != None):
+
+			quality.append("360p vedio")
+
+			sizes.append((yt.streams.get_by_itag("18").filesize)/(1024*1024))
+
+		if(yt.streams.get_by_itag("22") != None):
+
+			quality.append("720p vedio")
+
+			sizes.append((yt.streams.get_by_itag("22").filesize)/(1024*1024))
+
+		if(yt.streams.get_by_itag("137") != None):
+
+			quality.append("1080p HD vedio")
+
+			sizes.append((yt.streams.get_by_itag("137").filesize + yt.streams.get_by_itag("140").filesize)/(1024*1024))
+
+		if(yt.streams.get_by_itag("271") != None):
+
+			quality.append("1440p vedio")
+
+			sizes.append((yt.streams.get_by_itag("271").filesize + yt.streams.get_by_itag("140").filesize)/(1024*1024))
+
+		if(yt.streams.get_by_itag("313") != None):
+
+			quality.append("2160p FULL HD vedio")
+
+			sizes.append((yt.streams.get_by_itag("313").filesize + yt.streams.get_by_itag("140").filesize)/(1024*1024))
+
+		choices['values'] = quality
+
+		if("2160p FULL HD vedio" in quality):
+
+			choices.current(7)
+
+		elif("1440p vedio" in quality):
+
+			choices.current(6)
+
+		elif("1080p HD vedio" in quality):
+
+			choices.current(5)
+
+		elif("720p vedio" in quality):
+
+			choices.current(4)
+
+		elif("360p vedio" in quality):
+
+			choices.current(3)
+
+		elif("webm audio" in quality):
+
+			choices.current(2)
+
+		elif("mp3 audio" in quality):
+
+			choices.current(1)
+
+		else:
+
+			choices.current(0)
+
+		choice = choices.current()
+
+		print("\n<<<<<<<<<<<<<< Vedio avialabe at Quality >>>>>>>>>>>>>>\n")
+
+		print(quality)
+
+		print("\n<<<<<<<<<<<<<< Size coresponding to Quality >>>>>>>>>>>>>>\n")
+
+		print(sizes)
+
+		title = re.sub(r"[^a-zA-Z0-9_-]"," ",title)
+
+		if(len(title)>40):
+
+			title = title[:40]
+
+		label1.config(text = "Title : "+title,fg="red",bg="yellow",font = ("",14,"bold"))
+
+		tmp = path
+
+		if(len(tmp)>55):
+
+			tmp = tmp[:55]
+		
+		label2.config(text="Path : "+str(tmp) , font = ("verdana",14,"bold"))
+
+		label3.config(text = " Quality : " + choices['values'][choice] +" Size : {:.2f} MB".format(sizes[choice]), font = ("",14,"bold"))
+
+		label4.config(text = " Rating : {:.2f}".format(yt.rating) + " Views : "+str(yt.views)+" Duration : "+strftime("%H:%M:%S", gmtime(yt.length))+" ", font = ("",14,"bold"))
+
+		download_button.config(state = NORMAL)
+
+	elif(radioVar.get()=="2" and "playlist" in url):
+
+		label1.config(text = " processing playlist link wait .. ",bg="red",fg="yellow")
+
+		root.update_idletasks()
+
+		playlist_url = Playlist(url)
+
+		total_vedio = len(playlist_url)
+
+		quality = ["thumbnail"]
+
+		sizes = [1]
+
+		yt = YouTube(playlist_url[0])
+
+		if(yt.streams.get_by_itag("140") != None):
+
+			quality.append("mp3 audio")
+
+			sizes.append((yt.streams.get_by_itag("140").filesize)/(1024*1024))
+
+		if(yt.streams.get_by_itag("251") != None):
+
+			quality.append("webm audio")
+
+			sizes.append((yt.streams.get_by_itag("251").filesize)/(1024*1024))
+
+		if(yt.streams.get_by_itag("18") != None):
+
+			quality.append("360p vedio")
+
+			sizes.append((yt.streams.get_by_itag("18").filesize)/(1024*1024))
+
+		if(yt.streams.get_by_itag("22") != None):
+
+			quality.append("720p vedio")
+
+			sizes.append((yt.streams.get_by_itag("22").filesize)/(1024*1024))
+
+		if(yt.streams.get_by_itag("137") != None):
+
+			quality.append("1080p HD vedio")
+
+			sizes.append((yt.streams.get_by_itag("137").filesize + yt.streams.get_by_itag("140").filesize)/(1024*1024))
+
+		if(yt.streams.get_by_itag("271") != None):
+
+			quality.append("1440p vedio")
+
+			sizes.append((yt.streams.get_by_itag("271").filesize + yt.streams.get_by_itag("140").filesize)/(1024*1024))
+
+		if(yt.streams.get_by_itag("313") != None):
+
+			quality.append("2160p FULL HD vedio")
+
+			sizes.append((yt.streams.get_by_itag("313").filesize + yt.streams.get_by_itag("140").filesize)/(1024*1024))
+
+		choices['values'] = quality
+
+		if("2160p FULL HD vedio" in quality):
+
+			choices.current(7)
+
+		elif("1440p vedio" in quality):
+
+			choices.current(6)
+
+		elif("1080p HD vedio" in quality):
+
+			choices.current(5)
+
+		elif("720p vedio" in quality):
+
+			choices.current(4)
+
+		elif("360p vedio" in quality):
+
+			choices.current(3)
+
+		elif("webm audio" in quality):
+
+			choices.current(2)
+
+		elif("mp3 audio" in quality):
+
+			choices.current(1)
+
+		else:
+
+			choices.current(0)
+
+		choice = choices.current()
+
+		print("\n<<<<<<<<<<<<<< Vedio avialabe at Quality >>>>>>>>>>>>>>\n")
+
+		print(quality)
+
+		print("\n<<<<<<<<<<<<<< Size coresponding to Quality >>>>>>>>>>>>>>\n")
+
+		print(sizes)
+
+		label1.config(text = " Playlist contain total {} vedios ".format(total_vedio),fg="red",bg="yellow",font = ("",14,"bold"))
+
+		#label3.config(text = "Quality : " + choices['values'][choice] + " Size : {}".format(file_size))
+
+		#label4.config(text = "Average Rating : {:.2f}".format(avg_rating/total_vedio)+ " Total views : "+str(total_views)+" Total Duration : "+strftime("%H:%M:%S", gmtime(total_time)), font = ("",12,"bold"))
+
+		download_button.config(state = NORMAL)
 
 def emptyUrl():
 
 	url_field.delete(0,END)
+
+	label1.config(text="paste YouTube Vedio link here",fg="red",bg="yellow",font=(" ",15,"bold"))
+
+	label2.config(text="select download location",font = ("verdana",15,"bold"),fg="red",bg="yellow")
+
+	label3.config(text="select Quality of vedio to download",font = ("verdana",15,"bold"),fg="red",bg="yellow")
+
+	label4.config(text = "Open Downloaded Vedio",fg="red",bg="yellow",font=(" ",15,"bold"))
+
+	download_button.config(state = DISABLED)
+
+	choices['values'] = [" please insert link first "]
+
+	choices.current(0)
 
 def set_bg_to_grey():
 
@@ -786,6 +1072,8 @@ def open_history():
 
 if __name__ == '__main__':
 
+	flag = 0
+
 	root = Tk()
 
 	root.title("YouTube Multi Video Downloader")
@@ -803,8 +1091,6 @@ if __name__ == '__main__':
 	topframe = Frame(root,background="lightblue")
 
 	topframe.pack()
-
-	#Label(set_bg_frame,text="Select background color",fg="red",bg="blue",font=("",12,"bold")).pack()
 
 	darkcolor = Frame(topframe)
 
@@ -922,10 +1208,6 @@ if __name__ == '__main__':
 
 	radioVar = StringVar(frame,"1")
 
-	#style = ttk.Style(frame)
-
-	#style.configure("TRadiobutton", bg = "light green",fg = "red", font = ("arial", 10, "bold"))
-
 	single = Radiobutton(frame,text="single vedio",variable = radioVar,value = "1",fg = "black",bg="white",font = ("",10,"bold"))
 
 	single.pack(side = LEFT)
@@ -934,7 +1216,11 @@ if __name__ == '__main__':
 
 	multiple.pack(side = LEFT)
 
-	url_field = Entry(frame,width=50,font = ("verdana","15"))
+	url_var = StringVar()
+
+	url_var.trace("w", lambda name, index, mode, sv=url_var: check_url(url_var))
+
+	url_field = Entry(frame,width=50,font = ("verdana","15") , textvariable = url_var)
 
 	url_field.pack(side = LEFT)
 
@@ -942,7 +1228,7 @@ if __name__ == '__main__':
 
 	middleframe.pack(pady = 10)
 
-	download_button = Button(middleframe,text="Download",bg = "black", fg = "white",font = (" ",10,"bold"), command = start_downloading_thread)
+	download_button = Button(middleframe,text="Download",bg = "black", fg = "white",font = (" ",10,"bold"),state =DISABLED, command = start_downloading_thread)
 
 	download_button.pack(side = LEFT)
 
@@ -954,10 +1240,6 @@ if __name__ == '__main__':
 
 	desc_button.pack(side = LEFT)
 
-	#linkerror = Label(root,fg="red",text="no error")
-
-	#linkerror.pack(pady = (0,10))
-
 	label2 = Label(root,text="select download location",fg="red",bg="yellow",font = ("Agency FB",15,"bold"))
 
 	label2.pack(pady = 10)
@@ -966,23 +1248,17 @@ if __name__ == '__main__':
 
 	Selectpath_button.pack()
 
-	#filelocationError = Label(root,text="")
-	
-	#filelocationError.pack(pady = (0,0))
-
 	label3 = Label(root,text="select Quality of vedio to download",font = ("verdana",15,"bold"),fg="red",bg="yellow")
 
 	label3.pack(pady = 10)
 
-	Quality = ["mkv 1080p HD","mp4 1080p vedio only","mp4 720p","mp4 360p","mp3 audio only","thumbnail"]
+	#Quality = ["thumbnail","mp3 audio only","webm auio only","mp4 360p","mp4 720p","mp4 1080p vedio only","mkv 1080p HD","mkv 1440p","mkv 2160p FULL HD"]
 
 	quality = StringVar()
 
-	choices = ttk.Combobox(root,textvariable = quality,values = Quality,width = 30)
+	choices = ttk.Combobox(root,textvariable = quality,values = ["please insert link first "],width = 30)
 
 	choices.pack()
-
-	choices.current(0)
 
 	choices.bind("<<ComboboxSelected>>",select_Quality)
 
@@ -994,7 +1270,7 @@ if __name__ == '__main__':
 	
 	vedio_image = vedio_image.subsample(1,1)
 	
-	play_vedio_button = Button(root,image = vedio_image,command = open_downloaded_vedio)
+	play_vedio_button = Button(root,image = vedio_image,state = DISABLED,command = open_downloaded_vedio)
 	
 	play_vedio_button.pack(side = TOP,pady = 10)
 	
