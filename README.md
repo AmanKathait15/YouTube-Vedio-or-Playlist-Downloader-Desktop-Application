@@ -11,11 +11,11 @@ A desktop application to download youtube vedio and playsit by pasting link of y
 1 tkinter\
 2 threading\
 3 time\
-4 pathlib
+4 pathlib\
 5 urllib\
 6 pytube
  
-type command in terminal : **pip install pytube3**  check latest version [here](https://pypi.org/project/pytube3/)\
+type command in terminal : **pip install pytube3**  check latest version [here](https://pypi.org/project/pytube3/)
 
 [ffmpeg](https://github.com/adaptlearning/adapt_authoring/wiki/Installing-FFmpeg) is used to combine audio and vedio file for higher quality
  
