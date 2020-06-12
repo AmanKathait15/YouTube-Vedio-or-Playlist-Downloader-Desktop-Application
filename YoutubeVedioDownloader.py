@@ -30,7 +30,7 @@ with open("history.txt","a") as fp:
 
 	if os.stat("history.txt").st_size == 0:
 
-	    fp.write("Date-Time , Vedio Title , Vedio Type , Location , Vedio Link \n")
+	    fp.write("Date-Time , File Name , Vedio Type , Location , Vedio Link \n")
 
 def on_progress(stream, chunk,bytes_remaining):
 
@@ -49,6 +49,8 @@ def on_progress(stream, chunk,bytes_remaining):
 	desc_button.config(text = "{:.2f} % Downloaded".format(downloaded_percent))
 
 	label2.config(text = "{}/{} Vedios downloaded [{:.2f}/{:.2f}] MB".format(0,no_of_vedios,vedio_downloaded/(1024*1024),(file_size)/(1024*1024)))
+
+	root.update_idletasks()
 
 def on_progress2(current,total):
 
@@ -78,9 +80,21 @@ def download_HD(url):
 
 		print("audio download started")
 
-		Audio = "/"+file_name + "audio"
+		if sys.platform.startswith('win32'):
 
-		Vedio = "/"+file_name + "vedio"
+			Audio = "\\"+file_name + "audio"
+
+		else:
+
+			Audio = "/"+file_name + "audio"
+
+		if sys.platform.startswith('win32'):
+
+			Vedio = "\\"+file_name + "vedio"
+
+		else:
+
+			Vedio = "/"+file_name + "vedio"
 
 		stream.download(path,filename = Audio)
 
@@ -108,9 +122,19 @@ def download_HD(url):
 
 		label2.config(text = "{}/{} Vedios downloaded".format(1,1))
 
+		location = None
+
+		if sys.platform.startswith('win32'):
+
+			location = path+"\\"+file_name+".mkv"
+
+		else:
+
+			location = path+"/"+file_name+".mkv"
+
 		if(itag == "137"):
 
-			cmd = 'ffmpeg -y -i ' + path+ Audio +'.mp3  -r 30 -i ' +path + Vedio + '.mp4  -filter:a aresample=async=1 -c:a flac -c:v copy '+ path+ "/" + file_name+'.mkv'
+			cmd = 'ffmpeg -y -i ' + path+ Audio +'.mp3  -r 30 -i ' +path + Vedio + '.mp4  -filter:a aresample=async=1 -c:a flac -c:v copy '+ location
 
 			subprocess.call(cmd, shell=True)
 
@@ -118,7 +142,7 @@ def download_HD(url):
 
 		else:
 
-			cmd = 'ffmpeg -y -i ' + path+ Audio +'.mp3  -r 30 -i ' +path + Vedio + '.webm  -filter:a aresample=async=1 -c:a flac -c:v copy '+ path+ "/" + file_name+'.mkv'
+			cmd = 'ffmpeg -y -i ' + path+ Audio +'.mp3  -r 30 -i ' +path + Vedio + '.webm  -filter:a aresample=async=1 -c:a flac -c:v copy '+ location
 
 			subprocess.call(cmd, shell=True)
 
@@ -126,13 +150,21 @@ def download_HD(url):
 
 		os.remove(path + Audio + '.mp3')
 
-		location = path+"/"+file_name+".mkv"
+		location = None
+
+		if sys.platform.startswith('win32'):
+
+			location = path+"\\"+file_name+".mkv"
+
+		else:
+
+			location = path+"/"+file_name+".mkv"
 
 		print(location)
 
 		with open("history.txt","a") as fp:
 
-			fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+choices['values'][choices.current()]+" ,"+location+", "+url)
+			fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+file_name+" , "+choices['values'][choices.current()]+" ,"+location+", "+url)
 
 	except Exception as e:
 
@@ -156,21 +188,35 @@ def single_download():
 
 			title = yt.title
 
-			file_name = re.sub(r"[^a-zA-Z0-9_-]"," ",title)
+			file_name = re.sub(r"[^a-zA-Z0-9_-]","",title)
 
 			label2.config(text = "{}/{} thumbnail downloaded".format(0,1))
 
-			request.urlretrieve(yt.thumbnail_url,path+"/"+file_name+".jpeg")
+			if sys.platform.startswith('win32'):
+
+				request.urlretrieve(yt.thumbnail_url,path+"\\"+file_name+".jpeg")
+
+			else:
+
+				request.urlretrieve(yt.thumbnail_url,path+"/"+file_name+".jpeg")
 
 			on_progress2(1,1)
 
-			location = path+"/"+file_name+".jpeg"
+			location = None
+
+			if sys.platform.startswith('win32'):
+
+				location = path+"\\"+file_name+".jpeg"
+
+			else:
+
+				location = path+"/"+file_name+".jpeg"
 
 			print("\n>>>>>>>>>>>>>>> download location <<<<<<<<<<<<<<<<< \n"+location)
 
 			with open("history.txt","a") as fp:
 
-				fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+choices['values'][choices.current()]+" ,"+location+", "+url)
+				fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+file_name+" , "+choices['values'][choices.current()]+" ,"+location+", "+url)
 
 		else:
 
@@ -206,21 +252,29 @@ def single_download():
 
 			location = None
 
-			if(itag == "140"):
+			if sys.platform.startswith('win32'):
 
-				os.rename(path + "/"+ file_name + ".mp4", path+ "/"+ file_name + ".mp3")
-
-				location = path+"/"+file_name+".mp3"
+				location = path+"\\"+file_name
 
 			else:
 
-				location = path+"/"+file_name+".mp4"
+				location = path+"/"+file_name
+
+			if(itag == "140"):
+
+				os.rename(location + ".mp4", location + ".mp3")
+
+				location += ".mp3"
+
+			else:
+
+				location += ".mp4"
 
 			print("\n>>>>>>>>>>>>>>> download location <<<<<<<<<<<<<<<<< \n"+location)
 
 			with open("history.txt","a") as fp:
 
-				fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+choices['values'][choices.current()]+" ,"+location+", "+url)
+				fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+file_name+" , "+choices['values'][choices.current()]+" ,"+location+", "+url)
 
 	except Exception as e:
 
@@ -261,29 +315,43 @@ def multplie_download():
 
 				title = yt.title
 
-				file_name = re.sub(r"[^a-zA-Z0-9_-]"," ",title)+ str(choices['values'][choices.current()])
+				file_name = re.sub(r"[^a-zA-Z0-9_-]","",title)+ str(choices['values'][choices.current()])
 
 				label4.config(text = "wait for thumbnail to download completly")
 
-				label3.config(text = "RATING : "+str(yt.rating)+" VIEWS : "+str(yt.views)+" DURATION : "+strftime("%H:%M:%S", gmtime(yt.length)) , font = ("",14,"bold"))
+				label3.config(text = "RATING : "+str(yt.rating)+" VIEWS : "+str(yt.views)+" DURATION : "+strftime("%H:%M:%S", gmtime(yt.length)) , font = ("Arial",14,"bold"))
 
 				itag = select_Quality()
 
 				root.update_idletasks()
 
-				request.urlretrieve(yt.thumbnail_url,path+"/"+file_name+".jpeg")
+				if sys.platform.startswith('win32'):
+
+					request.urlretrieve(yt.thumbnail_url,path+"\\"+file_name+".jpeg")
+
+				else:
+
+					request.urlretrieve(yt.thumbnail_url,path+"/"+file_name+".jpeg")
 
 				root.update_idletasks()
 
 				on_progress2(i+1,l)
 
-				location = path+"/"+file_name+".jpeg"
+				location = None
+
+				if sys.platform.startswith('win32'):
+
+					location = path+"\\"+file_name+".jpeg"
+
+				else:
+
+					location = path+"/"+file_name+".jpeg"
 
 				print("\n>>>>>>>>>>>>>>> download location <<<<<<<<<<<<<<<<< \n"+location)
 
 				with open("history.txt","a") as fp:
 
-					fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+yt.title+" , "+choices['values'][choices.current()]+" ,"+location+", "+url)
+					fp.write("\n"+str(strftime("%Y-%m-%d %H:%M:%S", localtime()))+" , "+file_name+" , "+choices['values'][choices.current()]+" ,"+location+", "+url)
 
 
 			else:
@@ -316,7 +384,7 @@ def multplie_download():
 
 				label4.config(text = "wait for vedio to download completly")
 
-				label3.config(text = "RATING : "+str(yt.rating)+" VIEWS : "+str(yt.views)+" DURATION : "+strftime("%H:%M:%S", gmtime(yt.length)) , font = ("",14,"bold"))
+				label3.config(text = "RATING : "+str(yt.rating)+" VIEWS : "+str(yt.views)+" DURATION : "+strftime("%H:%M:%S", gmtime(yt.length)) , font = ("Arial",14,"bold"))
 
 				itag = select_Quality()
 
@@ -334,27 +402,29 @@ def multplie_download():
 
 				print("download started")
 
-				stream.download(path)
+				stream.download(path,filename = file_name)
 
 				print("{} vedio downloaded \n ".format(i+1))
 
 				location = None
 
-				if(itag == "140"):
+				if sys.platform.startswith('win32'):
 
-					os.rename(path + "/" + file_name + ".mp4", path + "/" + file_name + ".mp3")
-
-					location = path+"/"+file_name+".mp3"
-
-				elif(itag == "140"):
-
-					os.rename(path + "/" + file_name + ".mp4", path + "/" + file_name + ".mp3")
-
-					location = path+"/"+file_name+".mp3"
+					location = path+"\\"+file_name
 
 				else:
 
-					location = path+"/"+file_name+".mp4"
+					location = path+"/"+file_name
+
+				if(itag == "140"):
+
+					os.rename(location + ".mp4", location + ".mp3")
+
+					location += ".mp3"
+
+				else:
+
+					location += ".mp4"
 
 				print("\n>>>>>>>>>>>>>>> download location <<<<<<<<<<<<<<<<< \n"+location)
 
@@ -424,11 +494,11 @@ def start_downloading():
 
 		desc_button.config(text = "History")
 
-		label1.config(text=" Your download completed enjoy :) ",fg="yellow",bg="green",font = ("Agency FB",15,"bold"))
+		label1.config(text=" Your download completed enjoy :) ",fg="yellow",bg="green",font = ("Arial",15,"bold"))
 
-		label2.config(text="select download location",fg="red",bg="yellow",font = ("Agency FB",15,"bold"))
+		label2.config(text="select download location",fg="red",bg="yellow",font = ("Arial",15,"bold"))
 
-		label3.config(text="select quality of vedio to download",fg="red",bg="yellow",font = ("Agency FB",15,"bold"))
+		label3.config(text="select quality of vedio to download",fg="red",bg="yellow",font = ("Arial",15,"bold"))
 
 	except Exception as e:
 		
@@ -470,7 +540,7 @@ def start_downloading_thread():
 
 	print("\n>>>>>>>>>>>>>>>> Vedio Download Started :) <<<<<<<<<<<<<<<<< \n")
 
-	label1.config(text = " Your download started :) ",fg="blue",bg="lightgreen",font = ("",15,"bold"))
+	label1.config(text = " 		Your download started :) 		",fg="blue",bg="lightgreen",font = ("Arial",15,"bold"))
 
 	ClearUrl_button.config(text = "please")
 	#ClearUrl_button['text']="please"
@@ -528,7 +598,7 @@ def select_path():
 
 		tmp = tmp[:55]
 	
-	label2.config(text="Path : "+str(tmp) , font = ("verdana",14,"bold"))
+	label2.config(text="Path : "+str(tmp) , font = ("Arial",14,"bold"))
 
 def select_Quality(event = None):
 
@@ -618,7 +688,7 @@ def check_url(url_var):
 
 	if(radioVar.get()=="1" and "watch" in url):
 
-		label1.config(text = " processing vedio link wait .. ",bg="red",fg="yellow")
+		label1.config(text = "	 processing vedio link wait ... 	",bg="red",fg="yellow")
 
 		root.update_idletasks()
 
@@ -748,7 +818,7 @@ def check_url(url_var):
 
 			title = title[:40]
 
-		label1.config(text = "Title : "+title,fg="red",bg="yellow",font = ("",14,"bold"))
+		label1.config(text = "Title : "+title,fg="red",bg="yellow",font = ("Arial",14,"bold"))
 
 		tmp = path
 
@@ -756,17 +826,17 @@ def check_url(url_var):
 
 			tmp = tmp[:55]
 		
-		label2.config(text="Path : "+str(tmp) , font = ("verdana",14,"bold"))
+		label2.config(text="Path : "+str(tmp) , font = ("Arial",14,"bold"))
 
-		label3.config(text = " Quality : " + choices['values'][choice] +" Size : {:.2f} MB".format(sizes[choice]), font = ("",14,"bold"))
+		label3.config(text = " Quality : " + choices['values'][choice] +" Size : {:.2f} MB".format(sizes[choice]), font = ("Arial",14,"bold"))
 
-		label4.config(text = " Rating : {:.2f}".format(yt.rating) + " Views : "+str(yt.views)+" Duration : "+strftime("%H:%M:%S", gmtime(yt.length))+" ", font = ("",14,"bold"))
+		label4.config(text = " Rating : {:.2f}".format(yt.rating) + " Views : "+str(yt.views)+" Duration : "+strftime("%H:%M:%S", gmtime(yt.length))+" ", font = ("Arial",14,"bold"))
 
 		download_button.config(state = NORMAL)
 
 	elif(radioVar.get()=="2" and "playlist" in url):
 
-		label1.config(text = " processing playlist link wait .. ",bg="red",fg="yellow")
+		label1.config(text = "	processing playlist link wait ...	",bg="red",fg="yellow")
 
 		root.update_idletasks()
 
@@ -776,7 +846,7 @@ def check_url(url_var):
 
 		quality = ["thumbnail"]
 
-		sizes = [1]
+		sizes = [0.5]
 
 		yt = YouTube(playlist_url[0])
 
@@ -878,13 +948,13 @@ def emptyUrl():
 
 	url_field.delete(0,END)
 
-	label1.config(text="paste YouTube Vedio link here",fg="red",bg="yellow",font=(" ",15,"bold"))
+	label1.config(text="paste YouTube Vedio link here",fg="red",bg="yellow",font=("Arial",15,"bold"))
 
-	label2.config(text="select download location",font = ("verdana",15,"bold"),fg="red",bg="yellow")
+	label2.config(text="select download location",font = ("Arial",15,"bold"),fg="red",bg="yellow")
 
-	label3.config(text="select Quality of vedio to download",font = ("verdana",15,"bold"),fg="red",bg="yellow")
+	label3.config(text="select Quality of vedio to download",font = ("Arial",15,"bold"),fg="red",bg="yellow")
 
-	label4.config(text = "Open Downloaded Vedio",fg="red",bg="yellow",font=(" ",15,"bold"))
+	label4.config(text = "Open Downloaded Vedio",fg="red",bg="yellow",font=("Arial",15,"bold"))
 
 	download_button.config(state = DISABLED)
 
@@ -1078,13 +1148,13 @@ if __name__ == '__main__':
 
 	root.title("YouTube Multi Video Downloader")
 
-	root.geometry("800x670")
+	root.geometry("800x700")
 
 	root.resizable(width = False , height = False)
 	
 	root.configure(background = "lightblue")
 
-	label1 = Label(root,text="YouTube MUlti Vedio Downloader",fg="blue",bg="skyblue",font=("",15,"bold"))
+	label1 = Label(root,text="YouTube MUlti Vedio Downloader",fg="blue",bg="skyblue",font=("Arial",15,"bold"))
     
 	label1.pack(side=TOP,pady=20)
 
@@ -1188,7 +1258,7 @@ if __name__ == '__main__':
 	   
 	lightgreen_button.pack(side = LEFT)
 
-	label1 = Label(root,text="paste YouTube Vedio link here",fg="red",bg="yellow",font=(" ",15,"bold"))
+	label1 = Label(root,text="paste YouTube Vedio link here",fg="red",bg="yellow",font=("Arial",15,"bold"))
 
 	label1.pack(side = TOP, padx=20, pady = 10)
 
@@ -1208,11 +1278,11 @@ if __name__ == '__main__':
 
 	radioVar = StringVar(frame,"1")
 
-	single = Radiobutton(frame,text="single vedio",variable = radioVar,value = "1",fg = "black",bg="white",font = ("",10,"bold"))
+	single = Radiobutton(frame,text="single vedio",variable = radioVar,value = "1",fg = "black",bg="white",font = ("Arial",10,"bold"))
 
 	single.pack(side = LEFT)
 
-	multiple = Radiobutton(frame,text="playlist",variable = radioVar,value = "2",fg = "black",bg="white",font = ("",10,"bold"))
+	multiple = Radiobutton(frame,text="playlist",variable = radioVar,value = "2",fg = "black",bg="white",font = ("Arial",10,"bold"))
 
 	multiple.pack(side = LEFT)
 
@@ -1220,7 +1290,7 @@ if __name__ == '__main__':
 
 	url_var.trace("w", lambda name, index, mode, sv=url_var: check_url(url_var))
 
-	url_field = Entry(frame,width=50,font = ("verdana","15") , textvariable = url_var)
+	url_field = Entry(frame,width=50,font = ("Arial","15") , textvariable = url_var)
 
 	url_field.pack(side = LEFT)
 
@@ -1228,27 +1298,27 @@ if __name__ == '__main__':
 
 	middleframe.pack(pady = 10)
 
-	download_button = Button(middleframe,text="Download",bg = "black", fg = "white",font = (" ",10,"bold"),state =DISABLED, command = start_downloading_thread)
+	download_button = Button(middleframe,text="Download",bg = "black", fg = "white",font = ("Arial",10,"bold"),state =DISABLED,width = 15, height = 1,command = start_downloading_thread)
 
 	download_button.pack(side = LEFT)
 
-	ClearUrl_button = Button(middleframe,width = 10,bg = "black", fg = "white",  text = "clear",font = (" ",10,"bold"), command = emptyUrl)
+	ClearUrl_button = Button(middleframe,bg = "black", fg = "white",  text = "clear",font = ("Arial",10,"bold"),width = 15, height = 1, command = emptyUrl)
 
 	ClearUrl_button.pack(side=LEFT)
 
-	desc_button = Button(middleframe,text="History",bg = "black", fg = "white",font = (" ",10,"bold"), command = open_history)
+	desc_button = Button(middleframe,text="History",bg = "black", fg = "white",font = ("Arial",10,"bold"),width = 15, height = 1, command = open_history)
 
 	desc_button.pack(side = LEFT)
 
-	label2 = Label(root,text="select download location",fg="red",bg="yellow",font = ("Agency FB",15,"bold"))
+	label2 = Label(root,text="select download location",fg="red",bg="yellow",font = ("Arial",15,"bold"))
 
 	label2.pack(pady = 10)
 
-	Selectpath_button = Button(root,width = 20,bg = "black",fg = "white", text = "choose folder",font = ("verdana",10,"bold"),command = select_path)
+	Selectpath_button = Button(root,width = 20,bg = "black",fg = "white", text = "choose folder",font = ("Arial",10,"bold"),command = select_path)
 
 	Selectpath_button.pack()
 
-	label3 = Label(root,text="select Quality of vedio to download",font = ("verdana",15,"bold"),fg="red",bg="yellow")
+	label3 = Label(root,text="select Quality of vedio to download",font = ("Arial",15,"bold"),fg="red",bg="yellow")
 
 	label3.pack(pady = 10)
 
@@ -1262,7 +1332,7 @@ if __name__ == '__main__':
 
 	choices.bind("<<ComboboxSelected>>",select_Quality)
 
-	label4 = Label(root,text="open downoaded vedio",font = ("verdana",15,"bold"),fg="red",bg="yellow")
+	label4 = Label(root,text="open downoaded vedio",font = ("Arial",15,"bold"),fg="red",bg="yellow")
 
 	label4.pack(pady = (10,0))
 
@@ -1270,7 +1340,7 @@ if __name__ == '__main__':
 	
 	vedio_image = vedio_image.subsample(1,1)
 	
-	play_vedio_button = Button(root,image = vedio_image,state = DISABLED,command = open_downloaded_vedio)
+	play_vedio_button = Button(root,image = vedio_image,state = NORMAL,command = open_downloaded_vedio)
 	
 	play_vedio_button.pack(side = TOP,pady = 10)
 	
