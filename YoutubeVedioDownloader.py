@@ -1,18 +1,19 @@
 
 ############################## modules reuired ######################################
 
-from tkinter import *								###	used to craete GUI 
-from tkinter import ttk 							###	used to craete GUI
-from tkinter.filedialog import askdirectory			###	used to slecet path 
+from tkinter import *					###	used to craete GUI 
+from tkinter import ttk 				###	used to craete GUI
+from tkinter.filedialog import askdirectory		###	used to slecet path 
 
-from pytube import YouTube , Playlist 				###	used to download vedio/playlist
-from threading import Thread 						###	used to divide process into different threads
+from pytube import YouTube , Playlist 			###	used to download vedio/playlist
+from threading import Thread 				###	used to divide process into different threads
 
-from time import strftime,localtime,gmtime 			###	used to find local date and time 
-from urllib import request 							###	used to download thumbnail
-from pathlib import Path 							###	used to default download path in compter 
+from time import strftime,localtime,gmtime 		###	used to find local date and time 
+from urllib import request 				###	used to download thumbnail
+from pathlib import Path 				###	used to default download path in compter 
 
-import subprocess,sys,os 							###	used to craete subprocess and open other application like vedio/audio player browser etc
+import subprocess,sys,os 				###	used to craete subprocess and open other application 
+							###	like vedio/audio player browser etc
 
 ############################# End of imported modules ###########################################
 
@@ -25,123 +26,122 @@ class YouTube_Downloader():
 
 	variable name 		type 			use to
 
-	url 				string 			store youtube url link
+	url 			string 			store youtube url link
 
-	title 				string 			store title of vedio
+	title 			string 			store title of vedio
 
-	duration 			string 			store length of vedio in format Hour : Minute : Second
+	duration 		string 			store length of vedio in format Hour : Minute : Second
 
-	rating 				float			store rating of youtube vedio out of 5
+	rating 			float			store rating of youtube vedio out of 5
 
-	views 				integer			store number ot times vedio watched 
+	views 			integer			store number ot times vedio watched 
 
-	file_name 			string 			name of downloaded vedio in hardisk
+	file_name 		string 			name of downloaded vedio in hardisk
 
-	file_size 			float 			size of vedio in MB
+	file_size 		float 			size of vedio in MB
 
 	no_of_vedios 		integer			store total number of vedios in playlist
 
-	path 				string 			store path in which current vedio to be download
+	path 			string 			store path in which current vedio to be download
 
-	sizes 				list			store different size in MB coresspondig to different
-										qualities in which vedio is available
+	sizes 			list			store different size in MB coresspondig to different
+							qualities in which vedio is available
 
-	quality 			list 			store all available qualities of vedio to download 
-										ex 360p 720p 1080p 2160p audio etc
+	quality 		list 		        store all available qualities of vedio to download 
+							ex 360p 720p 1080p 2160p audio etc
 
 	playlist_urls 		list 			store all single vedio urls (string) of playlist
 
 	#################### class function details ######################
 
-	function name 				task													run/call
+	function name 		task						run/call
 
-	__init__ / constructor 		initialize all variables and assign memory				when object of YouTube_Downoader
-																						class is created
+	__init__ / constructor 	initialize all variables and assign memory	when object of YouTube_Downoader class is created 
+																			  
 
-	history 					create history.txt file if not exist and 				run before creating GUI
-								write first row vaues i.e (date-time , 
-								file name , vedio type , loaction , vedio link)
+	history 		create history.txt file if not exist and 	run before creating GUI
+				write first row vaues i.e (date-time , 
+				file name , vedio type , loaction , vedio link)
 
-	check_url 					this function check if vedio url enter/paste 			run every_time when value at 
-																						url_field change
-								is valid or not or match with its Type 
-								i.e sinlge vedio link by single vedio radio
-								button and playlist url witb playlist radio 
-								button it also display the details
-								( like title , description , rating ,size etc)
-								of vedio to be download by changing labels text . 
+	check_url 		this function check if vedio url enter/paste 	run every_time when value at url_field change
+				is valid or not or match with its Type 
+				i.e sinlge vedio link by single vedio radio
+				button and playlist url witb playlist radio 
+				button it also display the details
+				( like title , description , rating ,size etc)
+				of vedio to be download by changing labels text . 
 
-								Also change download button state to normal
-								so that vedio can be downoad by click event
+				Also change download button state to normal
+				so that vedio can be downoad by click event
 
-	clear_url_field				clear url field content and undo the effect	of			run when clear_button is clicked
-								check_url function on label2,label3,label4,label5
+	clear_url_field		clear url field content and undo the effect of	 run when clear_button is clicked
+				check_url function on label2,label3,label4
 
-	select_Quality				return itag corresponding to selected quality 			run every time when combobox
-								Downoading Vedio by itag is easy then by other			current value changes
+	select_Quality		return itag corresponding to selected quality 	run every time when combobox
+				Downoading Vedio by itag is easy then by other  current value changes
 
-								itag 		quality
+				itag 		quality
 
-								18 			360p
-								22			720p
-								137 		1080p withoit audio codec
-								140 		only audio
-								251 		only audio webm
-								271			without audio codec
-								313			2160p without audio codec
+				18 		360p
+				22		720p
+				137 		1080p withoit audio codec
+				140 		only audio
+				251 		only audio webm
+				271		without audio codec
+				313		2160p without audio codec
 
-	select_path 				change path value by selected folder path				run when choose folder button clicked 
-								value if no path select i.e cancel operation
-								then default vaue reassigned 			
+	select_path 		change path value by selected folder path	run when choose folder button clicked 
+				value if no path select i.e cancel operation
+				then default vaue reassigned 			
 
-	open_downloaded_vedio		play last downloaded file form history file 			run when play_vedio button is clicked
+	open_downloaded_vedio	play last downloaded file form history file 	run when play_vedio button is clicked
 
-	open_youtube 				open youtube.com website in your default browser		run when youtube_downoad icon clicked
+	open_youtube 		open youtube.com in your default browser 	run when youtube_downoad icon clicked
 
-	open_history 				open history.txt file in your default text editor		run when history button is clicked
+	open_history 		open history.txt in your default text editor    run when history button is clicked
 
-	start_downloading_thread 	this function seprate the downloading process  			run when download button is clicked
-								by gui process by creating different thread
-								for downoading process and hence reduce the
-								load of GUI and boost speed of download also
-								this function calL start_download function
-								also check for url error
+	downloading_thread 	this function seprate the downloading process  	run when download button is clicked
+				by gui process by creating different thread
+				for downoading process and hence reduce the
+				load of GUI and boost speed of download also
+				this function calL start_download function
+				also check for url error
 
-	start_downloading 			enable/disable the state of all button and 				run after start_downloading_thread
-								call singel_download or multiple download function
-								on the basis of value of radio_button 
+	start_downloading 	enable/disable the state of all button and 	run after downloading_thread
+				call singel_download or multiple_download()
+				on the basis of value of radio_button 
 
-	singel_download 			this function provide code to download singel vedio.	run when radioVar == "1"/singel vedio
-								change value of labels accordingly and further 			and download button is clicked
-								call on_progress1 function
+	singel_download 	this function provide code to download.		run when radioVar == "1"/singel vedio
+				singel vedio and change value of labels 	and download button is clicked
+				accordingly and further call on_progress1()
 
-	multiple download 			provide functionality of downloading 					run when radioVar == "2"/playlist 
-								playlist at different qualities and changes 			and download button is clicked
-								value of labels .
+	multiple download 	provide functionality of downloading 		run when radioVar == "2"/playlist 
+				playlist at different qualities 	 	and download button is clicked
+				and changes value of labels .
 
-	download_HD 				this function provide functinality of downloading 		run when select_Quality is >= 1080p
-								HD vedio with audio as pytube not support
-								download of HD vedio with audio codec .
-								The idea behind is simple download hd vedio witout 
-								audio and download audio file also and merge them
-								to get one vedio by free cmd/terminal soft
-								like ffmpeg
+	download_HD 		this function provide functinality of  		run when select_Quality is >= 1080p
+				downloading HD vedio with audio as 
+				pytube not support download of HD vedio 
+				with audio codec.The idea behind is simple 
+				download hd vedio witout audio and download
+				audio file also and merge them to get one 
+				vedio by free cmd/terminal soft like ffmpeg
 
-	on_progress1				this function show vedio downloading status by  		run when vedio is downloading
-								updating the value of progress bar and history
-								button
+	on_progress1		this function show vedio downloading status	run when vedio is downloading
+				by updating the value of progress bar
+				and history button
 
-	on_progress2 				this function show the status of  						run when combobox current value 
-								thumbnail downloaded in a playlist 						is thumbnail and radioVar is playlist
+	on_progress2 		this function show the status of  		run when combobox current value 
+				thumbnail downloaded in a playlist 		is "thumbnail" and radioVar is playlist
 
-	update_history				insert new row in history.txt file when new 			run after dowmload is completed
-								vedio downloaded
+	update_history		insert new row in history.txt file  		run after dowmload is completed
+				when new vedio downloaded
 
 	############### non-class function ###############
 
-	set_bg_to_<color>			change background to <color>							run when associated <color> button clicked
+	set_bg_to_<color>	change background to <color>			run when associated <color> button clicked
 
-	if __name__ == 'main'		contain most code for GUI 								execution begin from this function
+	if __name__ == 'main'	contain most code for GUI 			execution begin from this function
 
 	#################### End of Docstring ################
 
@@ -1361,7 +1361,7 @@ if __name__ == '__main__':
 
 	yd = YouTube_Downloader()
 
-	#print(yd.__doc__)
+	print(yd.__doc__)
 
 	yd.history()
 
